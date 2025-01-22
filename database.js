@@ -13,38 +13,89 @@ const pool = mysql
   })
   .promise();
 
+/* SECTION GET */
+// TODO 날짜 등 다른 정보로 get 할 수 있도록 쿼리 작성
+
+// 모든 경기
 const getMatches = async () => {
   const [matches] = await pool.query("SELECT * FROM matches");
   return matches;
 };
-// 쿼리파라미터 예시
-const getMatchById = async (id) => {
+// 날짜별 필터링
+const getMatchByDate = async (date) => {
   const [[match]] = await pool.query(
     `
     SELECT * 
     FROM matches
-    WHERE id = ?
+    WHERE date = ?
   `,
-    [id]
+    [date]
   );
   return match;
 };
-// TODO 날짜 등 다른 정보로 get 할 수 있도록 쿼리 작성
-
+// 모든 팀
+const getTeams = async () => {
+  const [teams] = await pool.query("SELECT * FROM kbo_teams");
+  return teams;
+};
+// 모든 경기장
+const getStadiums = async () => {
+  const [stadiums] = await pool.query("SELECT * FROM kbo_stadiums");
+  return stadiums;
+};
+// 팀 - 경기장 관계
+const getTeamStadiumRelation = async () => {
+  const [rel] = await pool.query("SELECT * FROM team_stadiums");
+  return rel;
+};
+// 모든 유저
 const getUsers = async () => {
   const [users] = await pool.query("SELECT * FROM user_profiles");
   return users;
 };
-// post 예시
-const createUser = async (user_id, nickname, team_id) => {
-  const result = await pool.query(
+// 모든 직관기록
+const getUserRecords = async () => {
+  const [records] = await pool.query("SELECT * FROM user_records");
+  return records;
+};
+// 모든 커뮤니티 글
+const getCommunityLogs = async () => {
+  const [logs] = await pool.query("SELECT * FROM community_logs");
+  return logs;
+};
+// 경기장별 커뮤니티 글
+const getCommunityLogByStadium = async (stadiumId) => {
+  const [logs] = await pool.query(
     `
-    INSERT INTO user_profiles (user_id, nickname, team_id)
-    VALUES (?, ?, ?)  
-  `,
-    [user_id, nickname, team_id]
+    SELECT * 
+    FROM community_logs
+    WHERE stadium_id = ?
+    `,
+    [stadiumId]
   );
-  return result;
+  return logs;
 };
 
-export { getMatches, getMatchById, getUsers, createUser };
+// post 예시
+// const createUser = async (user_id, nickname, team_id) => {
+//   const result = await pool.query(
+//     `
+//     INSERT INTO user_profiles (user_id, nickname, team_id)
+//     VALUES (?, ?, ?)
+//   `,
+//     [user_id, nickname, team_id]
+//   );
+//   return result;
+// };
+
+export {
+  getMatches,
+  getTeams,
+  getStadiums,
+  getUsers,
+  getUserRecords,
+  getCommunityLogs,
+  getTeamStadiumRelation,
+  getMatchByDate,
+  getCommunityLogByStadium,
+};
