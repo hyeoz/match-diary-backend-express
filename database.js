@@ -76,19 +76,36 @@ const getCommunityLogByStadium = async (stadiumId) => {
   return logs;
 };
 
-// post 예시
-// const createUser = async (user_id, nickname, team_id) => {
-//   const result = await pool.query(
-//     `
-//     INSERT INTO user_profiles (user_id, nickname, team_id)
-//     VALUES (?, ?, ?)
-//   `,
-//     [user_id, nickname, team_id]
-//   );
-//   return result;
-// };
+// 경기 데이터 생서
+const createMatch = async (params) => {
+  const { date, time, home, away, stadium, homeScore, awayScore, memo } =
+    params;
+  const result = await pool.query(
+    `
+    INSERT INTO matches (date, time, home, away, stadium, home_score, away_score, memo)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+  `,
+    [date, time, home, away, stadium, homeScore, awayScore, memo]
+  );
+  return result;
+};
+
+// 특정 경기 수정
+const updateMatch = async (params) => {
+  const { date, time, homeTeam, awayTeam, homeScore, awayScore } = params;
+  const [[match]] = await pool.query(
+    `
+      UPDATE matches 
+      SET home_score = ?, away_score = ?
+      WHERE date = ? AND time = ? AND home_team = ? AND away_team = ?
+    `,
+    [homeScore, awayScore, date, time, homeTeam, awayTeam]
+  );
+  return match;
+};
 
 export {
+  // GET
   getMatches,
   getTeams,
   getStadiums,
@@ -98,4 +115,8 @@ export {
   getTeamStadiumRelation,
   getMatchByDate,
   getCommunityLogByStadium,
+  // POST
+  createMatch,
+  // UPDATE
+  updateMatch,
 };

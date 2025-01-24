@@ -9,6 +9,8 @@ import {
   getTeamStadiumRelation,
   getMatchByDate,
   getCommunityLogByStadium,
+  createMatch,
+  updateMatch,
 } from "./database.js";
 
 const app = express();
@@ -148,6 +150,85 @@ app.get("/community-log", async (req, res) => {
     res
       .status(500)
       .send({ message: "An error occurred while fetching the logs" });
+  }
+});
+
+app.post("/matches", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = [
+      "date",
+      "time",
+      "home",
+      "away",
+      "stadium",
+      "homeScore",
+      "awayScore",
+    ];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    const match = await createMatch(body);
+
+    if (!match) {
+      return res
+        .status(404)
+        .send({ message: "Log not found for the given stadium information" });
+    }
+
+    res.send({ status: 201, data: "Added" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while adding a match" });
+  }
+});
+
+app.put("/matches", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = [
+      "date",
+      "time",
+      "homeTeam",
+      "awayTeam",
+      "homeScore",
+      "awayScore",
+    ];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    const updatedMatch = await updateMatch(body);
+
+    if (!updatedMatch) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given information" });
+    }
+
+    res.send({ status: 200, data: "Updated", match: updatedMatch });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while updating the match" });
   }
 });
 
