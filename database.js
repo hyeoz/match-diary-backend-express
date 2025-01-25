@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import dotenv from "dotenv";
 import mysql from "mysql2";
 
@@ -14,7 +15,6 @@ const pool = mysql
   .promise();
 
 /* SECTION GET */
-// TODO 날짜 등 다른 정보로 get 할 수 있도록 쿼리 작성
 
 // 모든 경기
 const getMatches = async () => {
@@ -76,32 +76,69 @@ const getCommunityLogByStadium = async (stadiumId) => {
   return logs;
 };
 
-// 경기 데이터 생서
+/* SECTION INSERT */
+// 경기 데이터 생성
 const createMatch = async (params) => {
   const { date, time, home, away, stadium, homeScore, awayScore, memo } =
     params;
+
+  const parsedDate = dayjs(date, "YYYY-MM-DD");
+  const parsedTime = dayjs(time, "HH:mm:ss");
+
   const result = await pool.query(
     `
     INSERT INTO matches (date, time, home, away, stadium, home_score, away_score, memo)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `,
-    [date, time, home, away, stadium, homeScore, awayScore, memo]
+    [parsedDate, parsedTime, home, away, stadium, homeScore, awayScore, memo]
+  );
+  return result;
+};
+// 커뮤니티 데이터 추가
+const createLog = async (params) => {
+  const { userId, stadiumId, date, userPost } = params;
+
+  const parsedDate = dayjs(date, "YYYY-MM-DD");
+  const result = await pool.query(
+    `
+      INSERT INTO community_logs (user_id, stadium_id, date, user_post)
+      VALUES (?, ?, ?, ?)
+    `,
+    [userId, stadiumId, parsedDate, userPost]
   );
   return result;
 };
 
+/* SECTION UPDATE */
 // 특정 경기 수정
 const updateMatch = async (params) => {
   const { date, time, homeTeam, awayTeam, homeScore, awayScore } = params;
-  const [[match]] = await pool.query(
+
+  const parsedDate = dayjs(date, "YYYY-MM-DD");
+  const parsedTime = dayjs(time, "HH:mm:ss");
+
+  const result = await pool.query(
     `
       UPDATE matches 
       SET home_score = ?, away_score = ?
       WHERE date = ? AND time = ? AND home_team = ? AND away_team = ?
     `,
-    [homeScore, awayScore, date, time, homeTeam, awayTeam]
+    [homeScore, awayScore, parsedDate, parsedTime, homeTeam, awayTeam]
   );
-  return match;
+  return result;
+};
+
+/* SECTION DELETE */
+// 커뮤니티 글 삭제
+const deleteLog = async (id) => {
+  const result = await pool.query(
+    `
+      DELETE FROM community_logs
+      WHERE id = ?
+    `,
+    [id]
+  );
+  return result;
 };
 
 export {
@@ -117,6 +154,9 @@ export {
   getCommunityLogByStadium,
   // POST
   createMatch,
+  createLog,
   // UPDATE
   updateMatch,
+  // DELETE
+  deleteLog,
 };

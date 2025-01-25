@@ -11,6 +11,8 @@ import {
   getCommunityLogByStadium,
   createMatch,
   updateMatch,
+  deleteLog,
+  createLog,
 } from "./database.js";
 
 const app = express();
@@ -20,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 /* SECTION API 작성 */
 
+// ANCHOR GET
 // 모든 경기
 app.get("/matches", async (req, res) => {
   try {
@@ -153,7 +156,9 @@ app.get("/community-log", async (req, res) => {
   }
 });
 
-app.post("/matches", async (req, res) => {
+// ANCHOR POST
+// 경기 추가
+app.post("/match", async (req, res) => {
   try {
     const body = req.body;
 
@@ -177,14 +182,7 @@ app.post("/matches", async (req, res) => {
       }
     }
 
-    const match = await createMatch(body);
-
-    if (!match) {
-      return res
-        .status(404)
-        .send({ message: "Log not found for the given stadium information" });
-    }
-
+    await createMatch(body);
     res.send({ status: 201, data: "Added" });
   } catch (error) {
     console.error(error);
@@ -192,7 +190,35 @@ app.post("/matches", async (req, res) => {
   }
 });
 
-app.put("/matches", async (req, res) => {
+// 커뮤니티 글 추가
+app.post("community-log", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "stadiumId", "date", "userPost"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    await createLog(body);
+    res.send({ status: 201, data: "Added" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while adding a log" });
+  }
+});
+
+// ANCHOR PATCH
+// 경기 업데이트
+app.patch("/match/update", async (req, res) => {
   try {
     const body = req.body;
 
@@ -232,11 +258,33 @@ app.put("/matches", async (req, res) => {
   }
 });
 
+// ANCHOR DELETE
+// 커뮤니티 글 삭제
+app.delete("/community-log", async (req, res) => {
+  try {
+    const logId = req.query.logId; // 쿼리 파라미터에서 'logId' 가져오기
+
+    if (!logId) {
+      return res.status(400).send({ message: "Log ID is required" });
+    }
+
+    await deleteLog(logId);
+    res.send({ status: 200, data: "Deleted" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while deleting the log" });
+  }
+});
+
+// ANCHOR ERROR
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wroeng...");
 });
 
+// ANCHOR SERVER
 app.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
