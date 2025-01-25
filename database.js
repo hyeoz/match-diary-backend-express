@@ -82,15 +82,24 @@ const createMatch = async (params) => {
   const { date, time, home, away, stadium, homeScore, awayScore, memo } =
     params;
 
-  const parsedDate = dayjs(date, "YYYY-MM-DD");
-  const parsedTime = dayjs(time, "HH:mm:ss");
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+  const parsedTime = dayjs(date + time).format("HH:mm:ss"); // 시간만으로는 dayjs 가 parsing 할 수 없음
 
   const result = await pool.query(
     `
     INSERT INTO matches (date, time, home, away, stadium, home_score, away_score, memo)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `,
-    [parsedDate, parsedTime, home, away, stadium, homeScore, awayScore, memo]
+    [
+      parsedDate,
+      parsedTime,
+      home,
+      away,
+      stadium,
+      homeScore,
+      awayScore,
+      memo ?? null,
+    ]
   );
   return result;
 };
@@ -98,7 +107,7 @@ const createMatch = async (params) => {
 const createLog = async (params) => {
   const { userId, stadiumId, date, userPost } = params;
 
-  const parsedDate = dayjs(date, "YYYY-MM-DD");
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
   const result = await pool.query(
     `
       INSERT INTO community_logs (user_id, stadium_id, date, user_post)
@@ -112,18 +121,18 @@ const createLog = async (params) => {
 /* SECTION UPDATE */
 // 특정 경기 수정
 const updateMatch = async (params) => {
-  const { date, time, homeTeam, awayTeam, homeScore, awayScore } = params;
+  const { date, time, home, away, homeScore, awayScore } = params;
 
-  const parsedDate = dayjs(date, "YYYY-MM-DD");
-  const parsedTime = dayjs(time, "HH:mm:ss");
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+  const parsedTime = dayjs(date + time).format("HH:mm:ss");
 
   const result = await pool.query(
     `
       UPDATE matches 
       SET home_score = ?, away_score = ?
-      WHERE date = ? AND time = ? AND home_team = ? AND away_team = ?
+      WHERE date = ? AND time = ? AND home = ? AND away = ?
     `,
-    [homeScore, awayScore, parsedDate, parsedTime, homeTeam, awayTeam]
+    [homeScore, awayScore, parsedDate, parsedTime, home, away]
   );
   return result;
 };
@@ -134,7 +143,7 @@ const deleteLog = async (id) => {
   const result = await pool.query(
     `
       DELETE FROM community_logs
-      WHERE id = ?
+      WHERE log_id = ?
     `,
     [id]
   );

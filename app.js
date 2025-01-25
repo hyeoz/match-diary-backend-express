@@ -183,7 +183,7 @@ app.post("/match", async (req, res) => {
     }
 
     await createMatch(body);
-    res.send({ status: 201, data: "Added" });
+    res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "An error occurred while adding a match" });
@@ -191,7 +191,7 @@ app.post("/match", async (req, res) => {
 });
 
 // 커뮤니티 글 추가
-app.post("community-log", async (req, res) => {
+app.post("/community-log", async (req, res) => {
   try {
     const body = req.body;
 
@@ -209,7 +209,7 @@ app.post("community-log", async (req, res) => {
     }
 
     await createLog(body);
-    res.send({ status: 201, data: "Added" });
+    res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "An error occurred while adding a log" });
@@ -230,8 +230,8 @@ app.patch("/match/update", async (req, res) => {
     const requiredFields = [
       "date",
       "time",
-      "homeTeam",
-      "awayTeam",
+      "home",
+      "away",
       "homeScore",
       "awayScore",
     ];
@@ -249,7 +249,7 @@ app.patch("/match/update", async (req, res) => {
         .send({ message: "Match not found for the given information" });
     }
 
-    res.send({ status: 200, data: "Updated", match: updatedMatch });
+    res.send({ status: 200, message: "Updated", data: updatedMatch });
   } catch (error) {
     console.error(error);
     res
@@ -260,16 +260,16 @@ app.patch("/match/update", async (req, res) => {
 
 // ANCHOR DELETE
 // 커뮤니티 글 삭제
-app.delete("/community-log", async (req, res) => {
+app.delete("/community-log/:logId", async (req, res) => {
   try {
-    const logId = req.query.logId; // 쿼리 파라미터에서 'logId' 가져오기
+    const logId = req.params.logId; // 쿼리 파라미터에서 'logId' 가져오기
 
     if (!logId) {
       return res.status(400).send({ message: "Log ID is required" });
     }
 
     await deleteLog(logId);
-    res.send({ status: 200, data: "Deleted" });
+    res.send({ status: 200, message: "Deleted" });
   } catch (error) {
     console.error(error);
     res
