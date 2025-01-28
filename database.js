@@ -82,8 +82,16 @@ const createMatch = async (params) => {
   const { date, time, home, away, stadium, homeScore, awayScore, memo } =
     params;
 
+  const isDuplicate = await checkDuplicateMatch(params);
+
   const parsedDate = dayjs(date).format("YYYY-MM-DD");
   const parsedTime = dayjs(date + time).format("HH:mm:ss"); // 시간만으로는 dayjs 가 parsing 할 수 없음
+
+  // 이미 존재하는 경기라면 수정요청 보내기
+  if (isDuplicate) {
+    const result = await updateMatch(params);
+    return result;
+  }
 
   const result = await pool.query(
     `
@@ -148,6 +156,23 @@ const deleteLog = async (id) => {
     [id]
   );
   return result;
+};
+
+/* SECTION UTILS */
+const checkDuplicateMatch = async (params) => {
+  const { date, time, home, away } = params;
+
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+  const parsedTime = dayjs(date + time).format("HH:mm:ss");
+
+  const [rows] = await pool.query(
+    `
+    SELECT * FROM matches
+    WHERE date = ? AND time = ? AND home = ? AND away = ?
+    `,
+    [parsedDate, parsedTime, home, away]
+  );
+  return rows.length > 0;
 };
 
 export {

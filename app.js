@@ -183,6 +183,7 @@ app.post("/match", async (req, res) => {
     }
 
     await createMatch(body);
+
     res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);
@@ -199,7 +200,6 @@ app.post("/community-log", async (req, res) => {
       return res.status(400).send({ message: "Payload is required" });
     }
 
-    // 필요한 모든 필드가 제공되었는지 확인
     // 필요한 모든 필드가 제공되었는지 확인
     const requiredFields = ["userId", "stadiumId", "date", "userPost"];
     for (const field of requiredFields) {
