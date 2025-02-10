@@ -13,7 +13,7 @@ import requests
 load_dotenv()
 # api_key = os.getenv("API_KEY") # TODO EC2 배포 후 키 연결
 webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-local_api_url = os.getendv("API_BASE_URL")
+local_api_url = os.getenv("API_BASE_URL")
 year = date.today().year
 
 # heroku 서버 키
