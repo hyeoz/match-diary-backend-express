@@ -7,6 +7,7 @@ import httpx
 import asyncio
 import aiomysql # mysql 비동기 라이브러리
 from datetime import date
+import requests
 
 ### 2. 기본 코드 작성
 # 전역변수 선언
@@ -284,18 +285,18 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 
-# try:
-#     response = requests.get(f"{api_url}/teams")
-#     response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
-#     teams = response.json()
-# except requests.exceptions.RequestException as e:
-#     print(f"Error: {e}")
+try:
+    response = requests.get(f"{api_url}/teams")
+    response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
+    teams = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
     
-# try:
-#     response = requests.get(f"{api_url}/stadiums")
-#     response.raise_for_status()
-#     stadiums = response.json()
-# except requests.exceptions.RequestException as e:
-#     print(f"Error: {e}")
+try:
+    response = requests.get(f"{api_url}/stadiums")
+    response.raise_for_status()
+    stadiums = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
 
 # TODO 스케줄러 실행
