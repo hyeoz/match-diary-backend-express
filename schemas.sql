@@ -17,10 +17,10 @@ CREATE TABLE matches (
   FOREIGN KEY (stadium) REFERENCES kbo_stadiums(stadium_id)
 );
 
-INSERT INTO matches (date, time, home, away, stadium, home_score, away_score, memo)
-VALUES
-(STR_TO_DATE('2024.03.23', '%Y.%m.%d'), '14:00:00', 2, 10, 2, 3, 2, NULL),
-(STR_TO_DATE('2024.03.23', '%Y.%m.%d'), '14:00:00', 1, 8, 1, 5, 3, '개막전');
+-- INSERT INTO matches (date, time, home, away, stadium, home_score, away_score, memo)
+-- VALUES
+-- (STR_TO_DATE('2024.03.23', '%Y.%m.%d'), '14:00:00', 2, 10, 2, 3, 2, NULL),
+-- (STR_TO_DATE('2024.03.23', '%Y.%m.%d'), '14:00:00', 1, 8, 1, 5, 3, '개막전');
 
 -- 팀 테이블
 CREATE TABLE kbo_teams (
@@ -101,10 +101,10 @@ CREATE TABLE user_profiles (
     FOREIGN KEY (team_id) REFERENCES kbo_teams(team_id)
 );
 
-INSERT INTO user_profiles (user_id, nickname, team_id)
-VALUES
-('asd1234', 'SoccerFan', 1),
-('qwe1234', 'GoalKeeper', 10);
+-- INSERT INTO user_profiles (user_id, nickname, team_id)
+-- VALUES
+-- ('asd1234', 'SoccerFan', 1),
+-- ('qwe1234', 'GoalKeeper', 10);
 
 -- 직관 기록 테이블
 CREATE TABLE user_records (
@@ -118,10 +118,10 @@ CREATE TABLE user_records (
     FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
 );
 
-INSERT INTO user_records (user_id, date, image, stadium_id, user_note)
-VALUES
-('asd1234', STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'path/to/image1.jpg', 1, 'Visited the stadium for the first time'),
-('qwe1234', STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'path/to/image2.jpg', 2, 'Cheered for my favorite team');
+-- INSERT INTO user_records (user_id, date, image, stadium_id, user_note)
+-- VALUES
+-- ('asd1234', STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'path/to/image1.jpg', 1, 'Visited the stadium for the first time'),
+-- ('qwe1234', STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'path/to/image2.jpg', 2, 'Cheered for my favorite team');
 
 -- 커뮤니티 테이블
 CREATE TABLE community_logs (
@@ -134,7 +134,7 @@ CREATE TABLE community_logs (
     FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
 );
 
-INSERT INTO community_logs (user_id, stadium_id, date, user_post)
-VALUES
-('asd1234', 1, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Amazing match! Loved the atmosphere.'),
-('qwe1234', 2, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Great game, but the food was too expensive.');
+-- INSERT INTO community_logs (user_id, stadium_id, date, user_post)
+-- VALUES
+-- ('asd1234', 1, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Amazing match! Loved the atmosphere.'),
+-- ('qwe1234', 2, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Great game, but the food was too expensive.');
