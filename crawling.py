@@ -30,6 +30,20 @@ year = date.today().year
 #     "Content-Type": "application/json",
 # }
 
+try:
+    response = requests.get(f"{api_url}/teams")
+    response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
+    teams = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+    
+try:
+    response = requests.get(f"{api_url}/stadiums")
+    response.raise_for_status()
+    stadiums = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"Error: {e}")
+
 # MySQL 비동기 연결
 async def connect_db():
     return await aiomysql.create_pool(
@@ -113,9 +127,10 @@ async def run_crawler():
                 "gameMonth": month,
                 "teamId": ""
             }
+            print('start crawling')
             res = await client.post("https://www.koreabaseball.com/ws/Schedule.asmx/GetScheduleList", data=data)
             root = json.loads(res.content.decode("utf-8"))
-            
+            print('end crowling')
             # 크롤링한 데이터 전처리
             """
             [0]: 날짜
@@ -190,9 +205,12 @@ async def run_crawler():
                 
             for match in formedData:
                 is_doubleheader(formedData, match)
-                await client.post(f"{api_url}/match", 
+                print(match)
+                response = await client.post(f"{api_url}/match", 
                     json=data
                 )
+                response.raise_for_status()
+                print('success')
 
         for month in ['09', '10', '11']:
             # NOTE 포스트시즌
@@ -284,19 +302,5 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-try:
-    response = requests.get(f"{api_url}/teams")
-    response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
-    teams = response.json()
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
-    
-try:
-    response = requests.get(f"{api_url}/stadiums")
-    response.raise_for_status()
-    stadiums = response.json()
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
 
 # TODO 스케줄러 실행

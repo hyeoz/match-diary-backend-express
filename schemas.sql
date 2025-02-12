@@ -1,5 +1,5 @@
-CREATE DATABASE match_diary_backend_express;
-USE match_diary_backend_express;
+-- CREATE DATABASE match_diary_backend_express;
+-- USE match_diary_backend_express;
 
 -- 경기 정보 테이블
 CREATE TABLE matches (
@@ -77,7 +77,7 @@ CREATE TABLE team_stadiums (
     FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
 );
 
-INSERT INTO team_stadium (team_id, stadium_id)
+INSERT INTO team_stadiums (team_id, stadium_id)
 VALUES 
 (1, 1),
 (2, 2),
