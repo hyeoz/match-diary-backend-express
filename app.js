@@ -285,6 +285,6 @@ app.use((err, req, res, next) => {
 });
 
 // ANCHOR SERVER
-app.listen(80, () => {
-  console.log("Server is running on port 80");
+app.listen(8080, () => {
+  console.log("Server is running on port 8080");
 });
