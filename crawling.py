@@ -5,39 +5,66 @@ from dotenv import load_dotenv
 import os
 import httpx
 import asyncio
+import aiomysql # mysql 비동기 라이브러리
 from datetime import date
-import requests
 
 ### 2. 기본 코드 작성
 # 전역변수 선언
 load_dotenv()
-# api_key = os.getenv("API_KEY") # TODO EC2 배포 후 키 연결
+
 webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-local_api_url = os.getenv("API_BASE_URL")
+api_url = os.getenv("API_BASE_URL") # TODO EC2 배포 후 키 연결 필요
+
+# DB_HOST = os.getenv("DB_HOST") # TODO host 확인 필요
+DB_USER = os.getenv("LOCAL_DB_USER")
+DB_PASSWORD = os.getenv("LOCAL_DB_PASSWORD")
+DB_NAME = os.getenv("LOCAL_DB_NAME")
+DB_PORT = os.getenv("LOCAL_DB_PORT")
+
 year = date.today().year
 
 # heroku 서버 키
-headers = {
-    'Authorization': ' '.join(['Bearer', api_key]),
-    "Content-Type": "application/json",
-}
-year = date.today().year;
+# headers = {
+#     'Authorization': ' '.join(['Bearer', api_key]),
+#     "Content-Type": "application/json",
+# }
 
+# MySQL 비동기 연결
+async def connect_db():
+    return await aiomysql.create_pool(
+        # host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        db=DB_NAME,
+        autocommit=True,
+        minsize=1,
+        maxsize=5
+    )
+
+# 데이터 삽입 함수
+async def save_match_to_db(pool, match_data):
+    async with pool.acquire() as conn:
+        async with conn.cursor() as cur:
+            sql = """
+            INSERT INTO matches (date, time, away, away_score, home, home_score, stadium, memo)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ON DUPLICATE KEY UPDATE 
+            away_score = VALUES(away_score), 
+            home_score = VALUES(home_score), 
+            memo = VALUES(memo)
+            """
+            await cur.execute(sql, (
+                match_data['date'],
+                match_data['time'],
+                match_data['away'],
+                match_data['awayScore'],
+                match_data['home'],
+                match_data['homeScore'],
+                match_data['stadium'],
+                match_data['memo']
+            ))
 # NOTE 로컬서버 이용하여 팀, 경기장 문자열 대신 id 들어가도록 로직 추가
-try:
-    response = requests.get(f"{local_api_url}/teams")
-    response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
-    teams = response.json()
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
-    
-try:
-    response = requests.get(f"{local_api_url}/stadiums")
-    response.raise_for_status()
-    stadiums = response.json()
-except requests.exceptions.RequestException as e:
-    print(f"Error: {e}")
-
 # NOTE id 로 할당
 def find_id_by_team_short_name(target_short_name):
     for team in teams:
@@ -107,10 +134,10 @@ async def run_crawler():
                     if row['row'][0]['Class'] == 'day':
                         # 날짜
                         data['date'] = convert_date_format(row['row'][0]['Text'])
-                        data['time'] = bs(row['row'][1]['Text']).get_text()
+                        data['time'] = bs(row['row'][1]['Text'],features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][2]['Text']).find_all('span')
+                        info = bs(row['row'][2]['Text'],features="html.parser").find_all('span')
                         # info 의 길이가 4 이상(=경기가 종료되고 score 정보가 있음)이면 종료된 경기
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
@@ -134,10 +161,10 @@ async def run_crawler():
                     else:
                         # 날짜
                         data['date'] = convert_date_format(formedData[-1]['date'])
-                        data['time'] = bs(row['row'][0]['Text']).get_text()
+                        data['time'] = bs(row['row'][0]['Text'], features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][1]['Text']).find_all('span')
+                        info = bs(row['row'][1]['Text'],features="html.parser").find_all('span')
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
                             data['awayScore'] = int(info[1].get_text())
@@ -162,7 +189,7 @@ async def run_crawler():
                 
             for match in formedData:
                 is_doubleheader(formedData, match)
-                await client.post(f"{local_api_url}/match", 
+                await client.post(f"{api_url}/match", 
                     json=data
                 )
 
@@ -189,10 +216,10 @@ async def run_crawler():
                     if row['row'][0]['Class'] == 'day':
                         # 날짜
                         data['date'] = convert_date_format(row['row'][0]['Text'])
-                        data['time'] = bs(row['row'][1]['Text']).get_text()
+                        data['time'] = bs(row['row'][1]['Text'],features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][2]['Text']).find_all('span')
+                        info = bs(row['row'][2]['Text'],features="html.parser").find_all('span')
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
                             data['awayScore'] = int(info[1].get_text())
@@ -213,10 +240,10 @@ async def run_crawler():
                     else:
                         # 날짜
                         data['date'] = conver_date_format(formedData[-1]['date'])
-                        data['time'] = bs(row['row'][0]['Text']).get_text()
+                        data['time'] = bs(row['row'][0]['Text'],features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][1]['Text']).find_all('span')
+                        info = bs(row['row'][1]['Text'],features="html.parser").find_all('span')
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
                             data['awayScore'] = int(info[1].get_text())
@@ -242,7 +269,7 @@ async def run_crawler():
 
             for match in formedData:
                 is_doubleheader(formedData, match)
-                await client.post(f"{local_api_url}/match", 
+                await client.post(f"{api_url}/match", 
                     json=data
                 )
         # 크롤링 완료 시 슬랙 메세지 보내기
@@ -256,5 +283,19 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# try:
+#     response = requests.get(f"{api_url}/teams")
+#     response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
+#     teams = response.json()
+# except requests.exceptions.RequestException as e:
+#     print(f"Error: {e}")
+    
+# try:
+#     response = requests.get(f"{api_url}/stadiums")
+#     response.raise_for_status()
+#     stadiums = response.json()
+# except requests.exceptions.RequestException as e:
+#     print(f"Error: {e}")
 
 # TODO 스케줄러 실행
