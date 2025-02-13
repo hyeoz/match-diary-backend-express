@@ -163,8 +163,10 @@ const deleteLog = async (id) => {
 const checkDuplicateMatch = async (params) => {
   const { date, time, home, away } = params;
 
-  const parsedDate = dayjs(date).format("YYYY-MM-DD");
-  const parsedTime = dayjs(date + time).format("HH:mm:ss");
+  const parsedDate = dayjs(`${date}T${time}`).format("YYYY-MM-DD");
+  const parsedTime = dayjs(`${date}T${time}`).format("HH:mm:ss");
+
+  console.log(parsedDate, parsedTime, home, away);
 
   const [rows] = await pool.query(
     `
