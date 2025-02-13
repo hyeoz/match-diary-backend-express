@@ -182,9 +182,8 @@ app.post("/match", async (req, res) => {
         return res.status(400).send({ message: `${field} is required` });
       }
     }
-    console.log("before createMatch");
+    console.log(body, "check body");
     await createMatch(body);
-    console.log("after createMatch");
 
     res.send({ status: 201, message: "Added" });
   } catch (error) {
