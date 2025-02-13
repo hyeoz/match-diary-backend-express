@@ -161,7 +161,7 @@ app.get("/community-log", async (req, res) => {
 app.post("/match", async (req, res) => {
   try {
     const body = req.body;
-    console.log(body, "????????");
+    console.log("POST /match");
 
     if (!body) {
       return res.status(400).send({ message: "Payload is required" });
