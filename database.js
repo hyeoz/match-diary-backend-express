@@ -83,7 +83,6 @@ const createMatch = async (params) => {
     params;
 
   const isDuplicate = await checkDuplicateMatch(params);
-  console.log(isDuplicate);
 
   const parsedDate = dayjs(date).format("YYYY-MM-DD");
   const parsedTime = dayjs(date + time).format("HH:mm:ss"); // 시간만으로는 dayjs 가 parsing 할 수 없음
@@ -165,8 +164,6 @@ const checkDuplicateMatch = async (params) => {
 
   const parsedDate = dayjs(`${date}T${time}`).format("YYYY-MM-DD");
   const parsedTime = dayjs(`${date}T${time}`).format("HH:mm:ss");
-
-  console.log(home, away);
 
   const [rows] = await pool.query(
     `

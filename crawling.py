@@ -31,14 +31,14 @@ year = date.today().year
 # }
 
 try:
-    response = requests.get(f"{api_url}/teams")
+    response = requests.get(f"{api_url}/teams", verify=False)
     response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
     teams = response.json()
 except requests.exceptions.RequestException as e:
     print(f"Error: {e}")
     
 try:
-    response = requests.get(f"{api_url}/stadiums")
+    response = requests.get(f"{api_url}/stadiums", verify=False)
     response.raise_for_status()
     stadiums = response.json()
 except requests.exceptions.RequestException as e:
@@ -195,9 +195,7 @@ async def run_crawler():
 
                         # 비고
                         data['memo'] = row['row'][7]['Text']
-                        print(f"home: {data['home']}, away: {data['away']}")
                         formedData.append(data) 
-                                            
                 except:
                     continue
                 
@@ -205,7 +203,7 @@ async def run_crawler():
             for match in formedData:
                 is_doubleheader(formedData, match)
                 response = await client.post(f"{api_url}/match", 
-                    json=data
+                    json=match
                 )
                 response.raise_for_status()
 
@@ -255,7 +253,7 @@ async def run_crawler():
                         formedData.append(data)
                     else:
                         # 날짜
-                        data['date'] = conver_date_format(formedData[-1]['date'])
+                        data['date'] = convert_date_format(formedData[-1]['date'])
                         data['time'] = bs(row['row'][0]['Text'],features="html.parser").get_text()
 
                         # 경기정보

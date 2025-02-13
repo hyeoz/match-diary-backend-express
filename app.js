@@ -161,7 +161,6 @@ app.get("/community-log", async (req, res) => {
 app.post("/match", async (req, res) => {
   try {
     const body = req.body;
-    console.log("POST /match");
 
     if (!body) {
       return res.status(400).send({ message: "Payload is required" });
@@ -182,7 +181,7 @@ app.post("/match", async (req, res) => {
         return res.status(400).send({ message: `${field} is required` });
       }
     }
-    console.log(body, "check body");
+
     await createMatch(body);
 
     res.send({ status: 201, message: "Added" });
