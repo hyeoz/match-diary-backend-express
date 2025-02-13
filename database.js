@@ -166,7 +166,7 @@ const checkDuplicateMatch = async (params) => {
   const parsedDate = dayjs(`${date}T${time}`).format("YYYY-MM-DD");
   const parsedTime = dayjs(`${date}T${time}`).format("HH:mm:ss");
 
-  console.log(parsedDate, parsedTime, home, away);
+  console.log(home, away);
 
   const [rows] = await pool.query(
     `

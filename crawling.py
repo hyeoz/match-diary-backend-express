@@ -127,10 +127,8 @@ async def run_crawler():
                 "gameMonth": month,
                 "teamId": ""
             }
-            print('start crawling')
             res = await client.post("https://www.koreabaseball.com/ws/Schedule.asmx/GetScheduleList", data=data)
             root = json.loads(res.content.decode("utf-8"))
-            print('end crowling')
             # 크롤링한 데이터 전처리
             """
             [0]: 날짜
@@ -197,6 +195,7 @@ async def run_crawler():
 
                         # 비고
                         data['memo'] = row['row'][7]['Text']
+                        print(f"home: {data['home']}, away: {data['away']}")
                         formedData.append(data) 
                                             
                 except:
@@ -205,12 +204,10 @@ async def run_crawler():
                 
             for match in formedData:
                 is_doubleheader(formedData, match)
-                print(match)
                 response = await client.post(f"{api_url}/match", 
                     json=data
                 )
                 response.raise_for_status()
-                print('success')
 
         for month in ['09', '10', '11']:
             # NOTE 포스트시즌
