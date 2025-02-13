@@ -23,7 +23,7 @@ const getMatches = async () => {
 };
 // 날짜별 필터링
 const getMatchByDate = async (date) => {
-  const [[match]] = await pool.query(
+  const [match] = await pool.query(
     `
     SELECT * 
     FROM matches
