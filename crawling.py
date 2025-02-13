@@ -148,10 +148,10 @@ async def run_crawler():
                     if row['row'][0]['Class'] == 'day':
                         # 날짜
                         data['date'] = convert_date_format(row['row'][0]['Text'])
-                        data['time'] = bs(row['row'][1]['Text'],features="html.parser").get_text()
+                        data['time'] = bs(row['row'][1]['Text'], features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][2]['Text'],features="html.parser").find_all('span')
+                        info = bs(row['row'][2]['Text'], features="html.parser").find_all('span')
                         # info 의 길이가 4 이상(=경기가 종료되고 score 정보가 있음)이면 종료된 경기
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
@@ -178,7 +178,7 @@ async def run_crawler():
                         data['time'] = bs(row['row'][0]['Text'], features="html.parser").get_text()
 
                         # 경기정보
-                        info = bs(row['row'][1]['Text'],features="html.parser").find_all('span')
+                        info = bs(row['row'][1]['Text'], features="html.parser").find_all('span')
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
                             data['awayScore'] = int(info[1].get_text())
