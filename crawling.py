@@ -152,6 +152,7 @@ async def run_crawler():
 
                         # 경기정보
                         info = bs(row['row'][2]['Text'], features="html.parser").find_all('span')
+                        
                         # info 의 길이가 4 이상(=경기가 종료되고 score 정보가 있음)이면 종료된 경기
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
@@ -164,7 +165,7 @@ async def run_crawler():
                             data['awayScore'] = -1
                             data['homeScore'] = -1
                             data['home'] = find_id_by_team_short_name(info[2].get_text())
-
+                        
                         # 경기장 정보
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
 
@@ -199,6 +200,7 @@ async def run_crawler():
                 except:
                     continue
                 
+            print(len(formedData))
                 
             for match in formedData:
                 is_doubleheader(formedData, match)
@@ -284,7 +286,7 @@ async def run_crawler():
             for match in formedData:
                 is_doubleheader(formedData, match)
                 await client.post(f"{api_url}/match", 
-                    json=data
+                    json=match
                 )
         # 크롤링 완료 시 슬랙 메세지 보내기
         webhook_data = {
