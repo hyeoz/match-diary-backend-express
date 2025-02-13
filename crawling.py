@@ -88,9 +88,13 @@ def find_id_by_team_short_name(target_short_name):
     raise ValueError(f"No object found with team_short_name: {target_short_name}")
 
 def find_id_by_stadium_short_name(target_short_name):
+    if target_short_name == "문학":
+        target_short_name = "인천"
+
     for stadium in stadiums:
         if stadium.get('stadium_short_name') == target_short_name:
             return stadium.get('stadium_id')
+
     raise ValueError(f"No object found with stadium_short_name: {target_short_name}")
 
 # NOTE 날짜 형식 변경
@@ -152,7 +156,6 @@ async def run_crawler():
 
                         # 경기정보
                         info = bs(row['row'][2]['Text'], features="html.parser").find_all('span')
-                        
                         # info 의 길이가 4 이상(=경기가 종료되고 score 정보가 있음)이면 종료된 경기
                         if len(info) > 3:  
                             data['away'] = find_id_by_team_short_name(info[0].get_text())
@@ -168,7 +171,6 @@ async def run_crawler():
                         
                         # 경기장 정보
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
-
                         # 비고
                         data['memo'] = row['row'][8]['Text']
                         formedData.append(data)
@@ -197,10 +199,10 @@ async def run_crawler():
                         # 비고
                         data['memo'] = row['row'][7]['Text']
                         formedData.append(data) 
-                except:
+
+                except Exception as e:
+                    print(e)
                     continue
-                
-            print(len(formedData))
                 
             for match in formedData:
                 is_doubleheader(formedData, match)
