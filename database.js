@@ -134,6 +134,20 @@ const createLog = async (params) => {
   return result;
 };
 
+// 유저 생성
+const createUser = async (params) => {
+  const { userId, nickname, teamId } = params;
+
+  const result = await pool.query(
+    `
+      INSERT INTO user_profiles (user_id, nickname, team_id)
+      VALUES (?, ?, ?)
+    `,
+    [userId, nickname, teamId]
+  );
+  return result;
+};
+
 /* SECTION UPDATE */
 // 특정 경기 수정
 const updateMatch = async (params) => {
@@ -198,6 +212,7 @@ export {
   // POST
   createMatch,
   createLog,
+  createUser,
   // UPDATE
   updateMatch,
   // DELETE

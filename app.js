@@ -107,30 +107,6 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// 단일 유저 조회
-app.post("/user", async (req, res) => {
-  try {
-    const { userId } = req.body; // body 에서 'userId' 가져오기
-
-    if (!userId) {
-      return res.status(400).send({ message: "User information is required" });
-    }
-
-    const user = await getUser(userId);
-
-    if (!user) {
-      return res.status(404).send({ message: "User not found" });
-    }
-
-    res.send(user);
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "An error occurred while fetching the user" });
-  }
-});
-
 // 모든 직관기록
 app.get("/user-records", async (req, res) => {
   try {
@@ -238,6 +214,55 @@ app.post("/community-log", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "An error occurred while adding a log" });
+  }
+});
+
+// 단일 유저 조회 - body 를 사용해야해서 post 로
+app.post("/user", async (req, res) => {
+  try {
+    const { userId } = req.body; // body 에서 'userId' 가져오기
+
+    if (!userId) {
+      return res.status(400).send({ message: "User information is required" });
+    }
+
+    const user = await getUser(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.send(user);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while fetching the user" });
+  }
+});
+
+// 유저 추가
+app.post("/user", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "nickname", "teamId"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    await createUser(body);
+    res.send({ status: 201, message: "Added" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while adding a user" });
   }
 });
 
