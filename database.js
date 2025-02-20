@@ -53,6 +53,14 @@ const getUsers = async () => {
   const [users] = await pool.query("SELECT * FROM user_profiles");
   return users;
 };
+// 단일 유저
+const getUser = async (userId) => {
+  const [[user]] = await pool.query(
+    "SELECT * FROM user_profiles WHERE id = ?",
+    [userId]
+  );
+  return user;
+};
 // 모든 직관기록
 const getUserRecords = async () => {
   const [records] = await pool.query("SELECT * FROM user_records");
@@ -181,6 +189,7 @@ export {
   getTeams,
   getStadiums,
   getUsers,
+  getUser,
   getUserRecords,
   getCommunityLogs,
   getTeamStadiumRelation,

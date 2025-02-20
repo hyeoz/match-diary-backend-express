@@ -13,6 +13,7 @@ import {
   updateMatch,
   deleteLog,
   createLog,
+  getUser,
 } from "./database.js";
 
 const app = express();
@@ -103,6 +104,30 @@ app.get("/users", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "Failed to fetch users" });
+  }
+});
+
+// 단일 유저 조회
+app.post("/user", async (req, res) => {
+  try {
+    const { userId } = req.body; // body 에서 'userId' 가져오기
+
+    if (!userId) {
+      return res.status(400).send({ message: "User information is required" });
+    }
+
+    const user = await getUser(userId);
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.send(user);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while fetching the user" });
   }
 });
 
