@@ -55,7 +55,7 @@ const getUsers = async () => {
 };
 // 단일 유저
 const getUser = async (userId) => {
-  const [[user]] = await pool.query(
+  const [user] = await pool.query(
     "SELECT * FROM user_profiles WHERE user_id = ?",
     [userId]
   );
