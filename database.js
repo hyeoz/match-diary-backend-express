@@ -55,10 +55,10 @@ const getUsers = async () => {
 };
 // 단일 유저
 const getUser = async (userId) => {
-  const [[user]] = await pool.query(
-    "SELECT * FROM user_profiles WHERE id = ?",
-    [userId]
-  );
+  const [user] = await pool.query("SELECT * FROM user_profiles WHERE id = ?", [
+    userId,
+  ]);
+  console.log(user, user[0]);
   return user;
 };
 // 모든 직관기록
