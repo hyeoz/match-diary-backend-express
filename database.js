@@ -137,7 +137,6 @@ const createLog = async (params) => {
 // 유저 생성
 const createUser = async (params) => {
   const { userId, nickname, teamId } = params;
-  console.log(params, "TEST");
   const result = await pool.query(
     `
       INSERT INTO user_profiles (user_id, nickname, team_id)
@@ -145,7 +144,6 @@ const createUser = async (params) => {
     `,
     [userId, nickname, teamId]
   );
-  console.log({ result });
   return result;
 };
 
