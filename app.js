@@ -15,6 +15,7 @@ import {
   createLog,
   getUser,
   createUser,
+  updateUser,
 } from "./database.js";
 
 const app = express();
@@ -268,6 +269,7 @@ app.post("/create-user", async (req, res) => {
 });
 
 // ANCHOR PATCH
+
 // 경기 업데이트
 app.patch("/match/update", async (req, res) => {
   try {
@@ -301,6 +303,40 @@ app.patch("/match/update", async (req, res) => {
     }
 
     res.send({ status: 200, message: "Updated", data: updatedMatch });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while updating the match" });
+  }
+});
+
+// 유저 정보 수정
+app.patch("/user/update", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "nickname", "teamId"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    const updateUser = await updateUser(body);
+
+    if (!updateUser) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given information" });
+    }
+
+    res.send({ status: 200, message: "Updated", data: updateUser });
   } catch (error) {
     console.error(error);
     res
