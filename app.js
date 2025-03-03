@@ -14,6 +14,7 @@ import {
   deleteLog,
   createLog,
   getUser,
+  createUser,
 } from "./database.js";
 
 const app = express();
