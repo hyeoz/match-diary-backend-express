@@ -328,15 +328,15 @@ app.patch("/user/update", async (req, res) => {
       }
     }
 
-    const updateUser = await updateUser(body);
+    const updatedUser = await updateUser(body);
 
-    if (!updateUser) {
+    if (!updatedUser) {
       return res
         .status(404)
         .send({ message: "Match not found for the given information" });
     }
 
-    res.send({ status: 200, message: "Updated", data: updateUser });
+    res.send({ status: 200, message: "Updated", data: updatedUser });
   } catch (error) {
     console.error(error);
     res
