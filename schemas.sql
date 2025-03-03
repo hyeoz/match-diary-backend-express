@@ -1,5 +1,5 @@
--- CREATE DATABASE match_diary_backend_express;
--- USE match_diary_backend_express;
+CREATE DATABASE match_diary_backend_express;
+USE match_diary_backend_express;
 
 -- 경기 정보 테이블
 CREATE TABLE matches (
