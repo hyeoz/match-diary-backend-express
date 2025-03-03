@@ -245,7 +245,7 @@ app.post("/user", async (req, res) => {
 app.post("/user", async (req, res) => {
   try {
     const body = req.body;
-
+    console.log(body, "TEST");
     if (!body) {
       return res.status(400).send({ message: "Payload is required" });
     }
@@ -257,6 +257,7 @@ app.post("/user", async (req, res) => {
         return res.status(400).send({ message: `${field} is required` });
       }
     }
+    console.log("TEST222");
 
     await createUser(body);
     res.send({ status: 201, message: "Added" });
