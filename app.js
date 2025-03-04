@@ -2,6 +2,7 @@ import express from "express";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import fs from "fs";
+import dotenv from "dotenv";
 import {
   getMatches,
   getTeams,
@@ -21,6 +22,8 @@ import {
   updateUser,
 } from "./database.js";
 
+dotenv.config();
+
 const app = express();
 
 app.use(express.json());
@@ -29,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 // AWS 설정
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
+  endpoint: `https://s3.${process.env.AWS_REGION}.amazonaws.com`,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
