@@ -1,6 +1,7 @@
 import express from "express";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
+import fs from "fs";
 import {
   getMatches,
   getTeams,
