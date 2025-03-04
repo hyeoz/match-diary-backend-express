@@ -34,38 +34,42 @@ const s3 = new S3Client({
   },
 });
 
-// Multer 설정 (파일 저장 X, 메모리에서 처리)
-const storage = multer.memoryStorage();
-const upload = multer({ storage: storage });
+// Multer 설정 (파일 업로드 미들웨어)
+const upload = multer({ dest: "uploads/" });
 
-async function uploadFile(fileBuffer, fileName, mimeType) {
-  const params = {
-    Bucket: process.env.S3_BUCKET_NAME,
-    Key: fileName,
-    Body: fileBuffer,
-    ContentType: mimeType,
-  };
-
-  const command = new PutObjectCommand(params);
-  await s3.send(command);
-
-  return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
-}
-
-/* SECTION API 작성 */
-
-// ANCHOR UPLOAD PHOTO
 // 파일 업로드 API
 app.post("/upload", upload.single("file"), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "No file to upload." });
+      return res.status(400).json({ error: "No file uploaded." });
     }
 
-    return res.json({ url: uploadedFile.Location });
+    // 파일 읽기
+    const fileContent = fs.readFileSync(req.file.path);
+    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+
+    // S3 업로드 설정
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: fileName,
+      Body: fileContent,
+      ContentType: req.file.mimetype,
+    };
+
+    // 파일 업로드 실행
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
+    // 업로드된 파일 URL 반환
+    const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+
+    // 임시 파일 삭제
+    fs.unlinkSync(req.file.path);
+
+    res.status(201).json({ message: "Success", url: fileUrl });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Failed to upload file" });
+    console.error("Failed to Upload:", error);
+    res.status(500).json({ error: "Failed to Upload" });
   }
 });
 
