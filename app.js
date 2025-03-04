@@ -1,4 +1,5 @@
 import express from "express";
+import AWS from "aws-sdk";
 import {
   getMatches,
   getTeams,
@@ -23,7 +24,42 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// AWS 설정
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+});
+
+// Multer 설정 (파일 저장 X, 메모리에서 처리)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
 /* SECTION API 작성 */
+
+// ANCHOR UPLOAD PHOTO
+// 파일 업로드 API
+app.post("/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file to upload." });
+    }
+
+    const params = {
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: `uploads/${Date.now()}_${req.file.originalname}`,
+      Body: req.file.buffer,
+      ContentType: req.file.mimetype,
+      ACL: "public-read", // 파일을 공개 URL로 접근 가능하게 설정
+    };
+
+    const uploadedFile = await s3.upload(params).promise();
+    return res.json({ url: uploadedFile.Location });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Failed to upload file" });
+  }
+});
 
 // ANCHOR GET
 // 모든 경기
