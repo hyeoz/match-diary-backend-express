@@ -1,5 +1,6 @@
 import express from "express";
-import AWS from "aws-sdk";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import multer from "multer";
 import {
   getMatches,
   getTeams,
@@ -25,15 +26,31 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // AWS 설정
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+const s3 = new S3Client({
   region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
 });
 
 // Multer 설정 (파일 저장 X, 메모리에서 처리)
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
+
+async function uploadFile(fileBuffer, fileName, mimeType) {
+  const params = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Key: fileName,
+    Body: fileBuffer,
+    ContentType: mimeType,
+  };
+
+  const command = new PutObjectCommand(params);
+  await s3.send(command);
+
+  return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
+}
 
 /* SECTION API 작성 */
 
@@ -45,15 +62,6 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       return res.status(400).json({ message: "No file to upload." });
     }
 
-    const params = {
-      Bucket: process.env.S3_BUCKET_NAME,
-      Key: `uploads/${Date.now()}_${req.file.originalname}`,
-      Body: req.file.buffer,
-      ContentType: req.file.mimetype,
-      ACL: "public-read", // 파일을 공개 URL로 접근 가능하게 설정
-    };
-
-    const uploadedFile = await s3.upload(params).promise();
     return res.json({ url: uploadedFile.Location });
   } catch (error) {
     console.error(error);
