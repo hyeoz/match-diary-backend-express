@@ -90,6 +90,9 @@ def find_id_by_team_short_name(target_short_name):
 def find_id_by_stadium_short_name(target_short_name):
     if target_short_name == "문학":
         target_short_name = "인천"
+    # 대전 신구장 에러 수정 
+    if target_short_name == "대전(신)":
+        target_short_name = "대전"
 
     for stadium in stadiums:
         if stadium.get('stadium_short_name') == target_short_name:
@@ -115,7 +118,7 @@ def is_doubleheader(entries, target_entry):
                 # target_entry['memo'] = [target_entry['memo'][0], '더블헤더']
                 if (target_entry['memo'] == '-'):
                     target_entry['memo'] = '더블헤더'
-                else:
+                elif "더블헤더" not in target_entry['memo']:  # 중복 방지
                     target_entry['memo'] = f"{target_entry['memo']}, 더블헤더"
 
 # KOB 홈페이지 기준
