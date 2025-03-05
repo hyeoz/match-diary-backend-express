@@ -14,7 +14,7 @@ import requests
 load_dotenv()
 
 webhook_url = os.getenv("SLACK_WEBHOOK_URL")
-api_url = os.getenv("API_BASE_URL") # TODO EC2 배포 후 키 연결 필요
+api_url = os.getenv("API_BASE_URL")
 
 # DB_HOST = os.getenv("DB_HOST") # TODO host 확인 필요
 DB_USER = os.getenv("LOCAL_DB_USER")
@@ -31,14 +31,14 @@ year = date.today().year
 # }
 
 try:
-    response = requests.get(f"{api_url}/teams", verify=False)
+    response = requests.get(f"{api_url}/teams")
     response.raise_for_status()  # 200-299 외의 상태 코드가 반환되면 예외를 발생시킵니다.
     teams = response.json()
 except requests.exceptions.RequestException as e:
     print(f"Error: {e}")
     
 try:
-    response = requests.get(f"{api_url}/stadiums", verify=False)
+    response = requests.get(f"{api_url}/stadiums")
     response.raise_for_status()
     stadiums = response.json()
 except requests.exceptions.RequestException as e:
