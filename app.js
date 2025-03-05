@@ -20,6 +20,10 @@ import {
   getUser,
   createUser,
   updateUser,
+  deleteRecord,
+  createRecord,
+  getUserRecordById,
+  updateRecord,
 } from "./database.js";
 
 dotenv.config();
@@ -42,41 +46,57 @@ const s3 = new S3Client({
 // Multer 설정 (파일 업로드 미들웨어)
 const upload = multer({ dest: "uploads/" });
 
-// 파일 업로드 API
-app.post("/upload", upload.single("file"), async (req, res) => {
+// 이미지 리사이징 및 S3 업로드 함수
+async function uploadToS3(file) {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded." });
+    const fileExtension = path.extname(file.originalname).toLowerCase();
+    if (![".jpg", ".jpeg", ".png", ".gif"].includes(fileExtension)) {
+      throw new Error("Only image files are allowed.");
     }
 
-    // 파일 읽기
-    const fileContent = fs.readFileSync(req.file.path);
-    const fileName = `uploads/${Date.now()}_${req.file.originalname}`;
+    // 이미지 리사이징 (세로 길이가 1800px를 넘지 않도록)
+    const image = sharp(file.path);
+    const metadata = await image.metadata();
+
+    let resizedImage = image;
+    if (metadata.height > 1800) {
+      resizedImage = image.resize(null, 1800); // 세로 길이를 1800px로 리사이징
+    }
+
+    // 리사이징된 이미지 임시 파일 저장
+    const resizedFilePath = `uploads/resized-${Date.now()}-${
+      file.originalname
+    }`;
+    await resizedImage.toFile(resizedFilePath);
 
     // S3 업로드 설정
+    const fileContent = fs.readFileSync(resizedFilePath);
+    const fileName = `uploads/${Date.now()}_${file.originalname}`;
+
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: fileName,
       Body: fileContent,
-      ContentType: req.file.mimetype,
+      ContentType: file.mimetype,
     };
 
-    // 파일 업로드 실행
+    // S3에 파일 업로드
     const command = new PutObjectCommand(params);
     await s3.send(command);
 
-    // 업로드된 파일 URL 반환
+    // S3 파일 URL 생성
     const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 
     // 임시 파일 삭제
-    fs.unlinkSync(req.file.path);
+    fs.unlinkSync(file.path);
+    fs.unlinkSync(resizedFilePath);
 
-    res.status(201).json({ message: "Success", url: fileUrl });
+    return fileUrl;
   } catch (error) {
-    console.error("Failed to Upload:", error);
-    res.status(500).json({ error: "Failed to Upload" });
+    console.error("Failed to upload to S3:", error);
+    throw new Error("Failed to upload image to S3.");
   }
-});
+}
 
 // ANCHOR GET
 // 모든 경기
@@ -321,6 +341,46 @@ app.post("/create-user", async (req, res) => {
   }
 });
 
+// 기록 추가
+app.post("/user-records", upload.single("image"), async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "stadiumId", "date", "userNote"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    // 이미지가 포함되었는지 확인
+    if (!req.file) {
+      return res.status(400).send({ message: "Image file is required" });
+    }
+
+    // 내부적으로 /upload API 호출해서 파일 S3에 업로드
+    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
+
+    const { userId, stadiumId, date, userNote } = body;
+    await createRecord({
+      userId,
+      stadiumId,
+      date,
+      image: imageUrl,
+      userNote,
+    });
+    res.send({ status: 201, message: "Added" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "An error occurred while adding a user" });
+  }
+});
+
 // ANCHOR PATCH
 
 // 경기 업데이트
@@ -398,6 +458,46 @@ app.patch("/user/update", async (req, res) => {
   }
 });
 
+// 기록 수정
+app.patch("/record/update", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "image", "userNote", "recordsId"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    // 유저가 다른 경우
+    const record = await getUserRecordById(body.recordsId);
+    if (body.userId !== record[0].user_id) {
+      return res.status(403).send({ message: "Forbidden" });
+    }
+
+    const updateRecord = await updateRecord(body);
+
+    if (!updateRecord) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given information" });
+    }
+
+    res.send({ status: 200, message: "Updated", data: updatedUser });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while updating the match" });
+  }
+});
+
 // ANCHOR DELETE
 // 커뮤니티 글 삭제
 app.delete("/community-log/:logId", async (req, res) => {
@@ -409,6 +509,25 @@ app.delete("/community-log/:logId", async (req, res) => {
     }
 
     await deleteLog(logId);
+    res.send({ status: 200, message: "Deleted" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while deleting the log" });
+  }
+});
+
+// 기록 삭제
+app.delete("/user_records/:recordsId", async (req, res) => {
+  try {
+    const recordsId = req.params.recordsId; // 쿼리 파라미터에서 'recordsId' 가져오기
+
+    if (!recordsId) {
+      return res.status(400).send({ message: "Log ID is required" });
+    }
+
+    await deleteRecord(recordsId);
     res.send({ status: 200, message: "Deleted" });
   } catch (error) {
     console.error(error);

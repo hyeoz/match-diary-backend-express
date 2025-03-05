@@ -66,6 +66,19 @@ const getUserRecords = async () => {
   const [records] = await pool.query("SELECT * FROM user_records");
   return records;
 };
+const getUserRecordsByUser = async (userId) => {
+  const [records] = await pool.query(
+    "SELECT * FROM user_records WHERE user_id = ?",
+    [userId]
+  );
+  return records;
+};
+const getUserRecordById = async (recordId) => {
+  const [record] = await pool.query("SELECT * FROM user_records WHERE id = ?", [
+    recordId,
+  ]);
+  return record;
+};
 // 모든 커뮤니티 글
 const getCommunityLogs = async () => {
   const [logs] = await pool.query("SELECT * FROM community_logs");
@@ -120,6 +133,7 @@ const createMatch = async (params) => {
   );
   return result;
 };
+
 // 커뮤니티 데이터 추가
 const createLog = async (params) => {
   const { userId, stadiumId, date, userPost } = params;
@@ -144,6 +158,21 @@ const createUser = async (params) => {
       VALUES (?, ?, ?)
     `,
     [userId, nickname, teamId]
+  );
+  return result;
+};
+
+// 직관 기록 추가
+const createRecord = async (params) => {
+  const { userId, stadiumId, date, image, userNote } = params;
+
+  // 기록 수정 요청은 분리
+  const result = await pool.query(
+    `
+    INSERT INTO user_records (user_id, date, image, user_note, stadium_id)
+    VALUES (?, ?, ?, ?, ?)
+  `,
+    [userId, date, image, userNote, stadiumId]
   );
   return result;
 };
@@ -182,6 +211,21 @@ const updateUser = async (params) => {
   return result;
 };
 
+// 직관 기록 수정
+const updateRecord = async (params) => {
+  const { image, userNote, recordsId } = params;
+
+  const result = await pool.query(
+    `
+      UPDATE user_records 
+      SET image = ?, user_note = ?
+      WHERE records_id = ?
+    `,
+    [image, userNote, recordsId]
+  );
+  return result;
+};
+
 /* SECTION DELETE */
 // 커뮤니티 글 삭제
 const deleteLog = async (id) => {
@@ -189,6 +233,18 @@ const deleteLog = async (id) => {
     `
       DELETE FROM community_logs
       WHERE log_id = ?
+    `,
+    [id]
+  );
+  return result;
+};
+
+// 직관 기록 삭제
+const deleteRecord = async (id) => {
+  const result = await pool.query(
+    `
+      DELETE FROM user_records
+      WHERE records_id = ?
     `,
     [id]
   );
@@ -220,6 +276,8 @@ export {
   getUsers,
   getUser,
   getUserRecords,
+  getUserRecordsByUser,
+  getUserRecordById,
   getCommunityLogs,
   getTeamStadiumRelation,
   getMatchByDate,
@@ -228,9 +286,12 @@ export {
   createMatch,
   createLog,
   createUser,
+  createRecord,
   // UPDATE
   updateMatch,
   updateUser,
+  updateRecord,
   // DELETE
   deleteLog,
+  deleteRecord,
 };
