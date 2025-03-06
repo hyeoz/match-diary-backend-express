@@ -66,6 +66,7 @@ const getUserRecords = async () => {
   const [records] = await pool.query("SELECT * FROM user_records");
   return records;
 };
+// 유저의 모든 직관기록 조회
 const getUserRecordsByUser = async (userId) => {
   const [records] = await pool.query(
     "SELECT * FROM user_records WHERE user_id = ?",
@@ -73,12 +74,25 @@ const getUserRecordsByUser = async (userId) => {
   );
   return records;
 };
+// id 에 따른 단일 직관기록 (유저 확인)
 const getUserRecordById = async (recordId) => {
   const [record] = await pool.query("SELECT * FROM user_records WHERE id = ?", [
     recordId,
   ]);
   return record;
 };
+// 날짜에 따른 단일 직관기록 (유저확인)
+const getUserRecordByDate = async (date) => {
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+
+  const [record] = await pool.query(
+    "SELECT * FROM user_records WHERE date = ?",
+    [parsedDate]
+  );
+  return record;
+};
+
+// 유저의
 // 모든 커뮤니티 글
 const getCommunityLogs = async () => {
   const [logs] = await pool.query("SELECT * FROM community_logs");
@@ -166,13 +180,15 @@ const createUser = async (params) => {
 const createRecord = async (params) => {
   const { userId, stadiumId, date, image, userNote } = params;
 
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+
   // 기록 수정 요청은 분리
   const result = await pool.query(
     `
     INSERT INTO user_records (user_id, date, image, user_note, stadium_id)
     VALUES (?, ?, ?, ?, ?)
   `,
-    [userId, date, image, userNote, stadiumId]
+    [userId, parsedDate, image, userNote, stadiumId]
   );
   return result;
 };
@@ -278,6 +294,7 @@ export {
   getUserRecords,
   getUserRecordsByUser,
   getUserRecordById,
+  getUserRecordByDate,
   getCommunityLogs,
   getTeamStadiumRelation,
   getMatchByDate,

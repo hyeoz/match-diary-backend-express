@@ -27,6 +27,8 @@ import {
   createRecord,
   getUserRecordById,
   updateRecord,
+  getUserRecordsByUser,
+  getUserRecordByDate,
 } from "./database.js";
 
 dotenv.config();
@@ -189,6 +191,50 @@ app.get("/users", async (req, res) => {
 app.get("/user-records", async (req, res) => {
   try {
     const records = await getUserRecords();
+    res.send(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to fetch user records" });
+  }
+});
+
+// 단일 기록 조회 by ID
+app.post("/user-record/id", async (req, res) => {
+  try {
+    const { recordId, userId } = req.body;
+    const userRecords = await getUserRecordsByUser(userId);
+
+    if (
+      !!userRecords.length &&
+      !userRecords.filter((record) => record.records_id === recordId).length
+    ) {
+      // 유저의 기록은 존재하지만 그 기록에 호출보낸 기록 id 가 없는 경우 (본인이 작성한 글이 아님)
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+
+    const records = await getUserRecordById(recordId);
+    res.send(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to fetch user records" });
+  }
+});
+
+// 단일 기록 조회 by DATE
+app.post("/user-record/date", async (req, res) => {
+  try {
+    const { date, userId } = req.body;
+    const userRecords = await getUserRecordsByUser(userId);
+
+    if (
+      !!userRecords.length &&
+      !userRecords.filter((record) => record.date === date).length
+    ) {
+      // 유저의 기록은 존재하지만 그 기록에 호출보낸 기록 id 가 없는 경우 (본인이 작성한 글이 아님)
+      return res.status(403).send({ message: "Forbidden access" });
+    }
+
+    const records = await getUserRecordByDate(date);
     res.send(records);
   } catch (error) {
     console.error(error);
@@ -484,9 +530,9 @@ app.patch("/record/update", async (req, res) => {
       return res.status(403).send({ message: "Forbidden" });
     }
 
-    const updateRecord = await updateRecord(body);
+    const updatedRecord = await updateRecord(body);
 
-    if (!updateRecord) {
+    if (!updatedRecord) {
       return res
         .status(404)
         .send({ message: "Match not found for the given information" });
@@ -522,7 +568,7 @@ app.delete("/community-log/:logId", async (req, res) => {
 });
 
 // 기록 삭제
-app.delete("/user_records/:recordsId", async (req, res) => {
+app.delete("/user-records/:recordsId", async (req, res) => {
   try {
     const recordsId = req.params.recordsId; // 쿼리 파라미터에서 'recordsId' 가져오기
 
