@@ -221,7 +221,9 @@ app.post("/user-record/date", async (req, res) => {
 
     if (
       !!userRecords.length &&
-      !userRecords.filter((record) => record.date.split("T")[0] === date).length
+      !userRecords.filter(
+        (record) => record.date.getDate() === new Date(date).getDate()
+      ).length
     ) {
       // 유저의 기록은 존재하지만 그 기록에 호출보낸 기록 id 가 없는 경우 (본인이 작성한 글이 아님)
       return res.status(403).send({ message: "Forbidden access" });
