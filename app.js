@@ -392,7 +392,7 @@ app.post("/create-user", async (req, res) => {
 });
 
 // 기록 추가
-app.post("/user-records", upload.single("image"), async (req, res) => {
+app.post("/user-records", upload.single("file"), async (req, res) => {
   try {
     const body = req.body;
 
