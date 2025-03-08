@@ -395,7 +395,13 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     }
 
     // 필요한 모든 필드가 제공되었는지 확인
-    const requiredFields = ["userId", "stadiumId", "date", "userNote"];
+    const requiredFields = [
+      "userId",
+      "matchId",
+      "stadiumId",
+      "date",
+      "userNote",
+    ];
     for (const field of requiredFields) {
       if (!(field in body)) {
         return res.status(400).send({ message: `${field} is required` });
@@ -410,9 +416,10 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     // 내부적으로 /upload API 호출해서 파일 S3에 업로드
     const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
-    const { userId, stadiumId, date, userNote } = body;
+    const { userId, matchId, stadiumId, date, userNote } = body;
     await createRecord({
       userId,
+      matchId,
       stadiumId,
       date,
       image: imageUrl,

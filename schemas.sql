@@ -110,6 +110,7 @@ CREATE TABLE user_profiles (
 CREATE TABLE user_records (
     records_id INT AUTO_INCREMENT PRIMARY KEY,  -- 고유 식별자
     user_id VARCHAR(255) NOT NULL,                   -- 사용자 ID (기기 ID, uuid)
+    match_id INT NOT NULL,                      -- 경기 식별자
     date DATE NOT NULL,                     -- 기록 날짜
     image VARCHAR(255) NOT NULL,        -- 이미지 경로
     stadium_id INT NOT NULL,          -- 경기장 ID

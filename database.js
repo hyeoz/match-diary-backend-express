@@ -178,17 +178,17 @@ const createUser = async (params) => {
 
 // 직관 기록 추가
 const createRecord = async (params) => {
-  const { userId, stadiumId, date, image, userNote } = params;
+  const { userId, matchId, stadiumId, date, image, userNote } = params;
 
   const parsedDate = dayjs(date).format("YYYY-MM-DD");
 
   // 기록 수정 요청은 분리
   const result = await pool.query(
     `
-    INSERT INTO user_records (user_id, date, image, user_note, stadium_id)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO user_records (user_id, matchId, date, image, user_note, stadium_id)
+    VALUES (?, ?, ?, ?, ?, ?)
   `,
-    [userId, parsedDate, image, userNote, stadiumId]
+    [userId, matchId, parsedDate, image, userNote, stadiumId]
   );
   return result;
 };
