@@ -54,6 +54,7 @@ const upload = multer({ storage });
 
 // 이미지 리사이징 및 S3 업로드 함수
 async function uploadToS3(file) {
+  console.log("uploadToS3", file);
   try {
     const fileExtension = path.extname(file.originalname).toLowerCase();
     if (![".jpg", ".jpeg", ".png", ".gif"].includes(fileExtension)) {
@@ -414,7 +415,7 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     }
 
     // 내부적으로 /upload API 호출해서 파일 S3에 업로드
-    const imageUrl = await uploadToS3(req.file.buffer); // S3에서 URL 반환
+    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
     const { userId, stadiumId, date, userNote } = body;
     await createRecord({
