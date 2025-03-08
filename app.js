@@ -414,7 +414,7 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     }
 
     // 내부적으로 /upload API 호출해서 파일 S3에 업로드
-    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
+    const imageUrl = await uploadToS3(req.file.buffer); // S3에서 URL 반환
 
     const { userId, stadiumId, date, userNote } = body;
     await createRecord({
@@ -427,7 +427,9 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);
-    res.status(500).send({ message: "An error occurred while adding a user" });
+    res
+      .status(500)
+      .send({ message: "An error occurred while adding a user record" });
   }
 });
 
