@@ -54,7 +54,6 @@ const upload = multer({ storage });
 
 // 이미지 리사이징 및 S3 업로드 함수
 async function uploadToS3(file) {
-  console.log("uploadToS3", file);
   try {
     const fileExtension = path.extname(file.originalname).toLowerCase();
     if (![".jpg", ".jpeg", ".png", ".gif"].includes(fileExtension)) {
