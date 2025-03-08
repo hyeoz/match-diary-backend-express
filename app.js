@@ -49,7 +49,8 @@ const s3 = new S3Client({
 });
 
 // Multer 설정 (파일 업로드 미들웨어)
-const upload = multer({ dest: "uploads/" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // 이미지 리사이징 및 S3 업로드 함수
 async function uploadToS3(file) {
