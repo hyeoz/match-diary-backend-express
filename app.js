@@ -62,7 +62,7 @@ async function uploadToS3(file) {
     }
 
     // 이미지 리사이징 (세로 길이가 1800px를 넘지 않도록)
-    const image = sharp(file.path);
+    const image = sharp(file.buffer);
     const metadata = await image.metadata();
 
     let resizedImage = image;
@@ -70,20 +70,16 @@ async function uploadToS3(file) {
       resizedImage = image.resize(null, 1800); // 세로 길이를 1800px로 리사이징
     }
 
-    // 리사이징된 이미지 임시 파일 저장
-    const resizedFilePath = `uploads/resized-${Date.now()}-${
-      file.originalname
-    }`;
-    await resizedImage.toFile(resizedFilePath);
+    // 리사이징된 이미지를 버퍼로 변환
+    const resizedBuffer = await resizedImage.toBuffer();
 
     // S3 업로드 설정
-    const fileContent = fs.readFileSync(resizedFilePath);
     const fileName = `uploads/${Date.now()}_${file.originalname}`;
 
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
       Key: fileName,
-      Body: fileContent,
+      Body: resizedBuffer,
       ContentType: file.mimetype,
     };
 
