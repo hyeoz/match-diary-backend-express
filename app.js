@@ -89,10 +89,6 @@ async function uploadToS3(file) {
     // S3 파일 URL 생성
     const fileUrl = `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`;
 
-    // 임시 파일 삭제
-    fs.unlinkSync(file.path);
-    fs.unlinkSync(resizedFilePath);
-
     return fileUrl;
   } catch (error) {
     console.error("Failed to upload to S3:", error);
