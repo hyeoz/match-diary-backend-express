@@ -35,7 +35,7 @@ const getMatchByDate = async (date) => {
 };
 // ID 별 필터링
 const getMatchById = async (id) => {
-  const [match] = await pool.query(
+  const [[match]] = await pool.query(
     `
     SELECT * 
     FROM matches
