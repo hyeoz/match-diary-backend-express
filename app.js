@@ -475,7 +475,7 @@ app.post("/create-record", upload.single("file"), async (req, res) => {
 
     await createRecord({
       userId,
-      matchId: matchId || null,
+      matchId: matchId === "null" ? null : matchId,
       stadiumId,
       date,
       image: imageUrl,
