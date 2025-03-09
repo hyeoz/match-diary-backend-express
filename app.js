@@ -272,6 +272,7 @@ app.post("/user-record/id", async (req, res) => {
 app.post("/user-record/date", async (req, res) => {
   try {
     const { date, userId } = req.body;
+    console.log(date, userId, "DEBUG");
     const userRecords = await getUserRecordsByUser(userId);
 
     if (
@@ -283,6 +284,7 @@ app.post("/user-record/date", async (req, res) => {
       // 유저의 기록은 존재하지만 그 기록에 호출보낸 기록 id 가 없는 경우 (본인이 작성한 글이 아님)
       return res.status(403).send({ message: "Forbidden access" });
     }
+    console.log(userRecords, "DEBUG");
 
     const records = await getUserRecordByDate(date);
     res.send(records);
@@ -444,7 +446,7 @@ app.post("/create-user", async (req, res) => {
 app.post("/user-records", upload.single("file"), async (req, res) => {
   try {
     const body = req.body;
-
+    console.log(body, "DEBUG222");
     if (!body) {
       return res.status(400).send({ message: "Payload is required" });
     }
@@ -452,7 +454,7 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     // 필요한 모든 필드가 제공되었는지 확인
     const requiredFields = [
       "userId",
-      "matchId",
+      // "matchId", // 경기 없는 날 작성을 위해
       "stadiumId",
       "date",
       "userNote",
@@ -472,6 +474,8 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
     const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
     const { userId, matchId, stadiumId, date, userNote } = body;
+    console.log(body, "DEBUG333");
+
     await createRecord({
       userId,
       matchId,
@@ -480,6 +484,7 @@ app.post("/user-records", upload.single("file"), async (req, res) => {
       image: imageUrl,
       userNote,
     });
+
     res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);

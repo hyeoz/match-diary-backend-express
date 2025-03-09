@@ -196,7 +196,7 @@ const createRecord = async (params) => {
   // 기록 수정 요청은 분리
   const result = await pool.query(
     `
-    INSERT INTO user_records (user_id, matchId, date, image, user_note, stadium_id)
+    INSERT INTO user_records (user_id, match_id, date, image, user_note, stadium_id)
     VALUES (?, ?, ?, ?, ?, ?)
   `,
     [userId, matchId, parsedDate, image, userNote, stadiumId]
