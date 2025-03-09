@@ -4,7 +4,6 @@ import multer from "multer";
 import dotenv from "dotenv";
 import sharp from "sharp";
 import path from "path";
-import fs from "fs";
 
 import {
   getMatches,
@@ -96,6 +95,20 @@ async function uploadToS3(file) {
     throw new Error("Failed to upload image to S3.");
   }
 }
+
+// 기존 파일 삭제
+const deleteOldFile = async () => {
+  try {
+    await s3
+      .deleteObject({
+        Bucket: BUCKET_NAME,
+        Key: oldFileKey,
+      })
+      .promise();
+  } catch (error) {
+    console.error("Error deleting old image:", error.message);
+  }
+};
 
 // ANCHOR GET
 // 모든 경기
@@ -563,12 +576,36 @@ app.patch("/record/update", async (req, res) => {
     }
 
     // 필요한 모든 필드가 제공되었는지 확인
-    const requiredFields = ["userId", "image", "userNote", "recordsId"];
+    const requiredFields = ["userId", "userNote", "recordsId"];
     for (const field of requiredFields) {
       if (!(field in body)) {
         return res.status(400).send({ message: `${field} is required` });
       }
     }
+
+    // 이미지가 포함되었는지 확인
+    if (!req.file) {
+      return res.status(400).send({ message: "Image file is required" });
+    }
+
+    // 기존 기록 확인
+    const oldRecord = await getUserRecordById(body.recordsId);
+
+    if (!oldRecord) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given information" });
+    }
+
+    if (oldRecord[0].image) {
+      const imageKey = oldRecord[0].image;
+      await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
+    }
+
+    // 내부적으로 /upload API 호출해서 파일 S3에 업로드
+    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
+
+    const { userId, matchId, stadiumId, date, userNote } = body;
 
     // 유저가 다른 경우
     const record = await getUserRecordById(body.recordsId);
@@ -576,7 +613,14 @@ app.patch("/record/update", async (req, res) => {
       return res.status(403).send({ message: "Forbidden" });
     }
 
-    const updatedRecord = await updateRecord(body);
+    const updatedRecord = await updateRecord({
+      userId,
+      matchId,
+      stadiumId,
+      date,
+      image: imageUrl,
+      userNote,
+    });
 
     if (!updatedRecord) {
       return res
@@ -619,7 +663,21 @@ app.delete("/user-records/:recordsId", async (req, res) => {
     const recordsId = req.params.recordsId; // 쿼리 파라미터에서 'recordsId' 가져오기
 
     if (!recordsId) {
-      return res.status(400).send({ message: "Log ID is required" });
+      return res.status(400).send({ message: "Record ID is required" });
+    }
+
+    // 기존 기록 확인
+    const oldRecord = await getUserRecordById(body.recordsId);
+
+    if (!oldRecord) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given information" });
+    }
+
+    if (oldRecord[0].image) {
+      const imageKey = oldRecord[0].image;
+      await deleteOldFile(imageKey); // S3에서 기존 이미지 삭제
     }
 
     await deleteRecord(recordsId);
