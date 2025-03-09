@@ -667,7 +667,7 @@ app.delete("/user-records/:recordsId", async (req, res) => {
     }
 
     // 기존 기록 확인
-    const oldRecord = await getUserRecordById(body.recordsId);
+    const oldRecord = await getUserRecordById(recordsId);
 
     if (!oldRecord) {
       return res
