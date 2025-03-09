@@ -586,10 +586,22 @@ app.patch("/record/update", upload.single("file"), async (req, res) => {
     }
     // 이미지가 포함되었는지 확인
     // TODO 수정인 경우 파일이 아닌 링크로 올 수 있음
-    if (!req.file) {
-      return res.status(400).send({ message: "Image file is required" });
+    // 이미지가 포함되었는지 확인 (파일이거나 링크일 수 있음)
+    let imageUrl = null;
+
+    if (req.file) {
+      // 파일이 포함되었으면 S3에 업로드 후 URL 반환
+      imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
+    } else if (body.imageUrl) {
+      // 이미지 URL이 포함되었으면 이를 사용
+      imageUrl = body.imageUrl;
     }
-    console.log(body, "DEBUG");
+
+    if (!imageUrl) {
+      return res
+        .status(400)
+        .send({ message: "Image (file or URL) is required" });
+    }
 
     // 기존 기록 확인
     const oldRecord = await getUserRecordById(body.recordsId);
@@ -604,9 +616,6 @@ app.patch("/record/update", upload.single("file"), async (req, res) => {
       const imageKey = oldRecord[0].image;
       await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
     }
-
-    // 내부적으로 /upload API 호출해서 파일 S3에 업로드
-    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
     const { userNote, recordsId } = body;
 
