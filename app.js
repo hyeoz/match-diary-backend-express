@@ -109,10 +109,11 @@ app.get("/matches", async (req, res) => {
   }
 });
 
-// 날짜별 경기
-app.get("/match", async (req, res) => {
+// 필터별 경기
+app.get("/match/filter", async (req, res) => {
   try {
     const date = req.query.date; // 쿼리 파라미터에서 'date' 가져오기
+    // TODO team 필터가 들어갈 수도 있음
 
     if (!date) {
       return res
@@ -138,9 +139,9 @@ app.get("/match", async (req, res) => {
 });
 
 // ID 별 경기 찾기
-app.get("/match", async (req, res) => {
+app.get("/match/:id", async (req, res) => {
   try {
-    const id = req.query.id; // 쿼리 파라미터에서 'date' 가져오기
+    const id = req.params.id; // path 파라미터에서 'id' 가져오기
 
     if (!id) {
       return res
