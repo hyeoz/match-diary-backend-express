@@ -444,7 +444,7 @@ app.post("/create-user", async (req, res) => {
 app.post("/create-record", upload.single("file"), async (req, res) => {
   try {
     const body = req.body;
-    console.log(body, "DEBUG222");
+
     if (!body) {
       return res.status(400).send({ message: "Payload is required" });
     }
