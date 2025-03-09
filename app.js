@@ -180,10 +180,22 @@ app.get("/users", async (req, res) => {
   }
 });
 
-// 모든 직관기록
+// 모든 직관기록 (관리자용)
 app.get("/user-records", async (req, res) => {
   try {
     const records = await getUserRecords();
+    res.send(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to fetch user records" });
+  }
+});
+
+// 유저의 모든 직관기록
+app.post("/user-records", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const records = await getUserRecordsByUser(userId);
     res.send(records);
   } catch (error) {
     console.error(error);
