@@ -272,7 +272,6 @@ app.post("/user-record/id", async (req, res) => {
 app.post("/user-record/date", async (req, res) => {
   try {
     const { date, userId } = req.body;
-    console.log(date, userId, "DEBUG");
     const userRecords = await getUserRecordsByUser(userId);
 
     if (
@@ -284,7 +283,6 @@ app.post("/user-record/date", async (req, res) => {
       // 유저의 기록은 존재하지만 그 기록에 호출보낸 기록 id 가 없는 경우 (본인이 작성한 글이 아님)
       return res.status(403).send({ message: "Forbidden access" });
     }
-    console.log(userRecords, "DEBUG");
 
     const records = await getUserRecordByDate(date);
     res.send(records);
@@ -443,7 +441,7 @@ app.post("/create-user", async (req, res) => {
 });
 
 // 기록 추가
-app.post("/user-records", upload.single("file"), async (req, res) => {
+app.post("/create-record", upload.single("file"), async (req, res) => {
   try {
     const body = req.body;
     console.log(body, "DEBUG222");
