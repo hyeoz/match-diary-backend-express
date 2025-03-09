@@ -88,9 +88,10 @@ const getUserRecordsByUser = async (userId) => {
 };
 // id 에 따른 단일 직관기록 (유저 확인)
 const getUserRecordById = async (recordId) => {
-  const [record] = await pool.query("SELECT * FROM user_records WHERE id = ?", [
-    recordId,
-  ]);
+  const [record] = await pool.query(
+    "SELECT * FROM user_records WHERE records_id = ?",
+    [recordId]
+  );
   return record;
 };
 // 날짜에 따른 단일 직관기록 (유저확인)
