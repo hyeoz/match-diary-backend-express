@@ -33,6 +33,18 @@ const getMatchByDate = async (date) => {
   );
   return match;
 };
+// ID 별 필터링
+const getMatchById = async (id) => {
+  const [match] = await pool.query(
+    `
+    SELECT * 
+    FROM matches
+    WHERE id = ?
+  `,
+    [id]
+  );
+  return match;
+};
 // 모든 팀
 const getTeams = async () => {
   const [teams] = await pool.query("SELECT * FROM kbo_teams");
@@ -92,7 +104,6 @@ const getUserRecordByDate = async (date) => {
   return record;
 };
 
-// 유저의
 // 모든 커뮤니티 글
 const getCommunityLogs = async () => {
   const [logs] = await pool.query("SELECT * FROM community_logs");
@@ -287,6 +298,7 @@ const checkDuplicateMatch = async (params) => {
 export {
   // GET
   getMatches,
+  getMatchById,
   getTeams,
   getStadiums,
   getUsers,

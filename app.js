@@ -29,6 +29,7 @@ import {
   updateRecord,
   getUserRecordsByUser,
   getUserRecordByDate,
+  getMatchById,
 } from "./database.js";
 
 dotenv.config();
@@ -120,6 +121,34 @@ app.get("/match", async (req, res) => {
     }
 
     const match = await getMatchByDate(date);
+
+    if (!match) {
+      return res
+        .status(404)
+        .send({ message: "Match not found for the given date" });
+    }
+
+    res.send(match);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while fetching the match" });
+  }
+});
+
+// ID 별 경기 찾기
+app.get("/match", async (req, res) => {
+  try {
+    const id = req.query.id; // 쿼리 파라미터에서 'date' 가져오기
+
+    if (!id) {
+      return res
+        .status(400)
+        .send({ message: "ID query parameter is required" });
+    }
+
+    const match = await getMatchById(id);
 
     if (!match) {
       return res
