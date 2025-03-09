@@ -97,7 +97,7 @@ async function uploadToS3(file) {
 }
 
 // 기존 파일 삭제
-const deleteOldFile = async () => {
+const deleteOldFile = async (oldFileKey) => {
   try {
     await s3
       .deleteObject({
