@@ -102,7 +102,7 @@ const deleteOldFile = async () => {
   try {
     await s3
       .deleteObject({
-        Bucket: BUCKET_NAME,
+        Bucket: process.env.S3_BUCKET_NAME,
         Key: oldFileKey,
       })
       .promise();
