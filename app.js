@@ -567,7 +567,7 @@ app.patch("/user/update", async (req, res) => {
 });
 
 // 기록 수정
-app.patch("/record/update", async (req, res) => {
+app.patch("/record/update", upload.single("file"), async (req, res) => {
   try {
     const body = req.body;
 
@@ -576,7 +576,7 @@ app.patch("/record/update", async (req, res) => {
     }
 
     // 필요한 모든 필드가 제공되었는지 확인
-    const requiredFields = ["userId", "userNote", "recordsId"];
+    const requiredFields = ["recordsId", "userNote"];
     for (const field of requiredFields) {
       if (!(field in body)) {
         return res.status(400).send({ message: `${field} is required` });
@@ -605,21 +605,18 @@ app.patch("/record/update", async (req, res) => {
     // 내부적으로 /upload API 호출해서 파일 S3에 업로드
     const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
-    const { userId, matchId, stadiumId, date, userNote } = body;
+    const { userNote, recordsId } = body;
 
     // 유저가 다른 경우
-    const record = await getUserRecordById(body.recordsId);
+    const record = await getUserRecordById(recordsId);
     if (body.userId !== record[0].user_id) {
       return res.status(403).send({ message: "Forbidden" });
     }
 
     const updatedRecord = await updateRecord({
-      userId,
-      matchId,
-      stadiumId,
-      date,
-      image: imageUrl,
       userNote,
+      recordsId,
+      image: imageUrl,
     });
 
     if (!updatedRecord) {
@@ -628,7 +625,7 @@ app.patch("/record/update", async (req, res) => {
         .send({ message: "Match not found for the given information" });
     }
 
-    res.send({ status: 200, message: "Updated", data: updatedUser });
+    res.send({ status: 200, message: "Updated", data: updatedRecord });
   } catch (error) {
     console.error(error);
     res
