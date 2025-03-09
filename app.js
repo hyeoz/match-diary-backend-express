@@ -472,11 +472,10 @@ app.post("/create-record", upload.single("file"), async (req, res) => {
     const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
 
     const { userId, matchId, stadiumId, date, userNote } = body;
-    console.log(body, "DEBUG333");
 
     await createRecord({
       userId,
-      matchId,
+      matchId: matchId || null,
       stadiumId,
       date,
       image: imageUrl,
