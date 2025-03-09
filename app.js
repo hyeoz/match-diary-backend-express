@@ -584,12 +584,12 @@ app.patch("/record/update", upload.single("file"), async (req, res) => {
         return res.status(400).send({ message: `${field} is required` });
       }
     }
-    console.log(body, "DEBUG");
     // 이미지가 포함되었는지 확인
     // TODO 수정인 경우 파일이 아닌 링크로 올 수 있음
     if (!req.file) {
       return res.status(400).send({ message: "Image file is required" });
     }
+    console.log(body, "DEBUG");
 
     // 기존 기록 확인
     const oldRecord = await getUserRecordById(body.recordsId);
