@@ -80,7 +80,6 @@ async function uploadToS3(file) {
       Key: fileName,
       Body: resizedBuffer,
       ContentType: file.mimetype,
-      ACL: "public-read", // 퍼블릭 읽기 권한을 부여
     };
 
     // S3에 파일 업로드
