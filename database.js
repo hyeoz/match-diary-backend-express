@@ -95,12 +95,12 @@ const getUserRecordById = async (recordId) => {
   return record;
 };
 // 날짜에 따른 단일 직관기록 (유저확인)
-const getUserRecordByDate = async (date) => {
+const getUserRecordByDate = async (date, userId) => {
   const parsedDate = dayjs(date).format("YYYY-MM-DD");
 
   const [record] = await pool.query(
-    "SELECT * FROM user_records WHERE date = ?",
-    [parsedDate]
+    "SELECT * FROM user_records WHERE date = ? AND user_id = ?",
+    [parsedDate, userId]
   );
   return record;
 };
