@@ -53,7 +53,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // 이미지 리사이징 및 S3 업로드 함수
-async function uploadToS3(file) {
+async function uploadToS3(file, path = "uploads") {
   try {
     const fileExtension = path.extname(file.originalname).toLowerCase();
     if (![".jpg", ".jpeg", ".png", ".gif"].includes(fileExtension)) {
@@ -73,7 +73,7 @@ async function uploadToS3(file) {
     const resizedBuffer = await resizedImage.toBuffer();
 
     // S3 업로드 설정
-    const fileName = `uploads/${Date.now()}_${file.originalname}`;
+    const fileName = `${path}/${Date.now()}_${file.originalname}`;
 
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
@@ -430,55 +430,70 @@ app.post("/create-user", async (req, res) => {
 });
 
 // 기록 추가
-app.post("/create-record", upload.single("file"), async (req, res) => {
-  try {
-    const body = req.body;
+// app.post("/create-record", upload.single("file"), async (req, res) => {
+app.post(
+  "/create-record",
+  upload.fields(
+    { name: "file", maxCount: 1 }, // 기록 이미지
+    { name: "ticketFile", maxCount: 1 } // 티켓 이미지
+  ),
+  async (req, res) => {
+    try {
+      const body = req.body;
 
-    if (!body) {
-      return res.status(400).send({ message: "Payload is required" });
-    }
-
-    // 필요한 모든 필드가 제공되었는지 확인
-    const requiredFields = [
-      "userId",
-      // "matchId", // 경기 없는 날 작성을 위해
-      "stadiumId",
-      "date",
-      "userNote",
-    ];
-    for (const field of requiredFields) {
-      if (!(field in body)) {
-        return res.status(400).send({ message: `${field} is required` });
+      if (!body) {
+        return res.status(400).send({ message: "Payload is required" });
       }
+
+      // 필요한 모든 필드가 제공되었는지 확인
+      const requiredFields = [
+        "userId",
+        // "matchId", // 경기 없는 날 작성을 위해
+        "stadiumId",
+        "date",
+        "userNote",
+      ];
+      for (const field of requiredFields) {
+        if (!(field in body)) {
+          return res.status(400).send({ message: `${field} is required` });
+        }
+      }
+
+      // 이미지가 포함되었는지 확인
+      if (!req.files.file || !req.files.file[0]) {
+        return res.status(400).send({ message: "Image file is required" });
+      }
+
+      // 내부적으로 /upload API 호출해서 파일 S3에 업로드
+      const imageUrl = await uploadToS3(req.files.file[0]); // S3에서 URL 반환
+
+      // 티켓 이미지 있으면 업로드
+      let ticketImageUrl = null;
+      if (req.files.ticketFile && req.files.ticketFile[0]) {
+        ticketImageUrl = await uploadToS3(req.files.ticketFile[0], "ticket");
+      }
+
+      const { userId, matchId, stadiumId, date, userNote } = body;
+
+      await createRecord({
+        userId,
+        matchId: matchId === "null" ? null : matchId,
+        stadiumId,
+        date,
+        image: imageUrl,
+        userNote,
+        ticketImage: ticketImageUrl,
+      });
+
+      res.send({ status: 201, message: "Added" });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .send({ message: "An error occurred while adding a user record" });
     }
-
-    // 이미지가 포함되었는지 확인
-    if (!req.file) {
-      return res.status(400).send({ message: "Image file is required" });
-    }
-
-    // 내부적으로 /upload API 호출해서 파일 S3에 업로드
-    const imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
-
-    const { userId, matchId, stadiumId, date, userNote } = body;
-
-    await createRecord({
-      userId,
-      matchId: matchId === "null" ? null : matchId,
-      stadiumId,
-      date,
-      image: imageUrl,
-      userNote,
-    });
-
-    res.send({ status: 201, message: "Added" });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "An error occurred while adding a user record" });
   }
-});
+);
 
 // ANCHOR PATCH
 
@@ -558,82 +573,101 @@ app.patch("/user/update", async (req, res) => {
 });
 
 // 기록 수정
-app.patch("/record/update", upload.single("file"), async (req, res) => {
-  try {
-    const body = req.body;
+// app.patch("/record/update", upload.single("file"), async (req, res) => {
+app.patch(
+  "/record/update",
+  upload.fields([
+    { name: "file", maxCount: 1 }, // 기록 이미지
+    { name: "ticketFile", maxCount: 1 }, // 티켓 이미지
+  ]),
+  async (req, res) => {
+    try {
+      const body = req.body;
 
-    if (!body) {
-      return res.status(400).send({ message: "Payload is required" });
-    }
-
-    // 필요한 모든 필드가 제공되었는지 확인
-    const requiredFields = ["recordsId", "userNote"];
-    for (const field of requiredFields) {
-      if (!(field in body)) {
-        return res.status(400).send({ message: `${field} is required` });
+      if (!body) {
+        return res.status(400).send({ message: "Payload is required" });
       }
+
+      // 필요한 모든 필드가 제공되었는지 확인
+      const requiredFields = ["recordsId", "userNote"];
+      for (const field of requiredFields) {
+        if (!(field in body)) {
+          return res.status(400).send({ message: `${field} is required` });
+        }
+      }
+      // 이미지가 포함되었는지 확인
+      // TODO 수정인 경우 파일이 아닌 링크로 올 수 있음
+      // 이미지가 포함되었는지 확인 (파일이거나 링크일 수 있음)
+      let imageUrl = null;
+
+      if (!req.files.file[0]) {
+        // 파일이 포함되었으면 S3에 업로드 후 URL 반환
+        imageUrl = await uploadToS3(req.files.file[0]); // S3에서 URL 반환
+      } else if (body.imageUrl) {
+        // 이미지 URL이 포함되었으면 이를 사용
+        imageUrl = body.imageUrl;
+      }
+
+      if (!imageUrl) {
+        return res
+          .status(400)
+          .send({ message: "Image (file or URL) is required" });
+      }
+
+      let ticketUrl = null;
+
+      if (!req.files.ticketFile[0]) {
+        // 파일이 포함되었으면 S3에 업로드 후 URL 반환
+        ticketUrl = await uploadToS3(req.files.ticketFile[0]); // S3에서 URL 반환
+      } else if (body.ticketUrl) {
+        // 이미지 URL이 포함되었으면 이를 사용
+        ticketUrl = body.ticketUrl;
+      }
+
+      // 기존 기록 확인
+      const oldRecord = await getUserRecordById(body.recordsId);
+
+      if (!oldRecord) {
+        return res
+          .status(404)
+          .send({ message: "Match not found for the given information" });
+      }
+
+      if (oldRecord[0].image) {
+        const imageKey = oldRecord[0].image;
+        await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
+      }
+
+      const { userNote, recordsId } = body;
+
+      // 유저가 다른 경우
+      const record = await getUserRecordById(recordsId);
+      if (body.userId !== record[0].user_id) {
+        return res.status(403).send({ message: "Forbidden" });
+      }
+
+      const updatedRecord = await updateRecord({
+        userNote,
+        recordsId,
+        image: imageUrl,
+        ticketImage: ticketUrl,
+      });
+
+      if (!updatedRecord) {
+        return res
+          .status(404)
+          .send({ message: "Match not found for the given information" });
+      }
+
+      res.send({ status: 200, message: "Updated", data: updatedRecord });
+    } catch (error) {
+      console.error(error);
+      res
+        .status(500)
+        .send({ message: "An error occurred while updating the match" });
     }
-    // 이미지가 포함되었는지 확인
-    // TODO 수정인 경우 파일이 아닌 링크로 올 수 있음
-    // 이미지가 포함되었는지 확인 (파일이거나 링크일 수 있음)
-    let imageUrl = null;
-
-    if (req.file) {
-      // 파일이 포함되었으면 S3에 업로드 후 URL 반환
-      imageUrl = await uploadToS3(req.file); // S3에서 URL 반환
-    } else if (body.imageUrl) {
-      // 이미지 URL이 포함되었으면 이를 사용
-      imageUrl = body.imageUrl;
-    }
-
-    if (!imageUrl) {
-      return res
-        .status(400)
-        .send({ message: "Image (file or URL) is required" });
-    }
-
-    // 기존 기록 확인
-    const oldRecord = await getUserRecordById(body.recordsId);
-
-    if (!oldRecord) {
-      return res
-        .status(404)
-        .send({ message: "Match not found for the given information" });
-    }
-
-    if (oldRecord[0].image) {
-      const imageKey = oldRecord[0].image;
-      await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
-    }
-
-    const { userNote, recordsId } = body;
-
-    // 유저가 다른 경우
-    const record = await getUserRecordById(recordsId);
-    if (body.userId !== record[0].user_id) {
-      return res.status(403).send({ message: "Forbidden" });
-    }
-
-    const updatedRecord = await updateRecord({
-      userNote,
-      recordsId,
-      image: imageUrl,
-    });
-
-    if (!updatedRecord) {
-      return res
-        .status(404)
-        .send({ message: "Match not found for the given information" });
-    }
-
-    res.send({ status: 200, message: "Updated", data: updatedRecord });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .send({ message: "An error occurred while updating the match" });
   }
-});
+);
 
 // ANCHOR DELETE
 // 커뮤니티 글 삭제

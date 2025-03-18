@@ -115,6 +115,7 @@ CREATE TABLE user_records (
     image VARCHAR(255) NOT NULL,        -- 이미지 경로
     stadium_id INT NOT NULL,          -- 경기장 ID
     user_note TEXT NOT NULL,             -- 사용자가 기록한 메모
+    ticket_image VARCHAR(255) DEFAULT NULL,        -- 티켓 이미지 경로 *0318 추가
     FOREIGN KEY (user_id) REFERENCES user_profiles(user_id),
     FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
 );
