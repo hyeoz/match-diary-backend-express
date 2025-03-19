@@ -3,6 +3,7 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import dotenv from "dotenv";
 import sharp from "sharp";
+import path from "path";
 
 import {
   getMatches,
