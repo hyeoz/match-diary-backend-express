@@ -642,7 +642,7 @@ app.patch(
       // 이미지가 포함되었는지 확인 (파일이거나 링크일 수 있음)
       let imageUrl = null;
 
-      if (!req.files.file[0]) {
+      if (req.files.file[0]) {
         // 파일이 포함되었으면 S3에 업로드 후 URL 반환
         imageUrl = await uploadToS3(req.files.file[0]); // S3에서 URL 반환
       } else if (body.imageUrl) {
@@ -658,7 +658,7 @@ app.patch(
 
       let ticketUrl = null;
 
-      if (!req.files.ticketFile[0]) {
+      if (req.files.ticketFile[0]) {
         // 파일이 포함되었으면 S3에 업로드 후 URL 반환
         ticketUrl = await uploadToS3(req.files.ticketFile[0]); // S3에서 URL 반환
       } else if (body.ticketUrl) {
