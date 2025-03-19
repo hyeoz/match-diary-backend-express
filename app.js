@@ -447,10 +447,10 @@ app.post("/create-user", async (req, res) => {
 // app.post("/create-record", upload.single("file"), async (req, res) => {
 app.post(
   "/create-record",
-  upload.fields(
+  upload.fields([
     { name: "file", maxCount: 1 }, // 기록 이미지
-    { name: "ticketFile", maxCount: 1 } // 티켓 이미지
-  ),
+    { name: "ticketFile", maxCount: 1 }, // 티켓 이미지
+  ]),
   async (req, res) => {
     try {
       const body = req.body;
