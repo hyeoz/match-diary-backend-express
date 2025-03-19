@@ -642,6 +642,7 @@ app.patch(
       // 이미지가 포함되었는지 확인 (파일이거나 링크일 수 있음)
       let imageUrl = null;
 
+      console.error("어디서 에러가 날까000");
       if (req.files.file[0]) {
         // 파일이 포함되었으면 S3에 업로드 후 URL 반환
         imageUrl = await uploadToS3(req.files.file[0]); // S3에서 URL 반환
@@ -657,6 +658,7 @@ app.patch(
       }
 
       let ticketUrl = null;
+      console.error("어디서 에러가 날까111");
 
       if (req.files.ticketFile[0]) {
         // 파일이 포함되었으면 S3에 업로드 후 URL 반환
@@ -666,25 +668,25 @@ app.patch(
         ticketUrl = body.ticketUrl;
       }
 
+      const { userNote, recordsId } = body;
+
       // 기존 기록 확인
-      const oldRecord = await getUserRecordById(body.recordsId);
+      const oldRecord = await getUserRecordById(recordsId);
 
       if (!oldRecord) {
         return res
           .status(404)
           .send({ message: "Match not found for the given information" });
       }
+      console.error("어디서 에러가 날2222");
 
       if (oldRecord[0].image) {
         const imageKey = oldRecord[0].image;
         await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
       }
 
-      const { userNote, recordsId } = body;
-
       // 유저가 다른 경우
-      const record = await getUserRecordById(recordsId);
-      if (body.userId !== record[0].user_id) {
+      if (body.userId !== oldRecord[0].user_id) {
         return res.status(403).send({ message: "Forbidden" });
       }
 
