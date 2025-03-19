@@ -55,7 +55,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // 이미지 리사이징 및 S3 업로드 함수
-async function uploadToS3(file, path = "uploads") {
+async function uploadToS3(file, s3path = "uploads") {
   try {
     const fileExtension = path.extname(file.originalname).toLowerCase();
     if (![".jpg", ".jpeg", ".png", ".gif"].includes(fileExtension)) {
@@ -75,7 +75,7 @@ async function uploadToS3(file, path = "uploads") {
     const resizedBuffer = await resizedImage.toBuffer();
 
     // S3 업로드 설정
-    const fileName = `${path}/${Date.now()}_${file.originalname}`;
+    const fileName = `${s3path}/${Date.now()}_${file.originalname}`;
 
     const params = {
       Bucket: process.env.S3_BUCKET_NAME,
