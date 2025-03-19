@@ -766,7 +766,7 @@ app.delete("/user-records/:recordsId", async (req, res) => {
 // 직관 예약 삭제
 app.delete("/bookings", async (req, res) => {
   try {
-    const { bookingId } = req.body;
+    const bookingId = req.params.recordsId;
     await deleteBooking(bookingId);
     res.send({ status: 200, message: "Deleted" });
   } catch (error) {
