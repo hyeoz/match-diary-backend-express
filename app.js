@@ -29,6 +29,8 @@ import {
   getUserRecordsByUser,
   getUserRecordByDate,
   getMatchById,
+  getAllBookings,
+  deleteBooking,
 } from "./database.js";
 
 dotenv.config();
@@ -320,6 +322,18 @@ app.get("/community-log", async (req, res) => {
   }
 });
 
+// 유저의 직관 예약 기록 조회
+app.post("/bookings", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const bookings = await getAllBookings(userId);
+    res.send(bookings);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to fetch bookings" });
+  }
+});
+
 // ANCHOR POST
 // 경기 추가
 app.post("/match", async (req, res) => {
@@ -494,6 +508,33 @@ app.post(
     }
   }
 );
+
+// 직관 예약 추가
+app.post("/create-booking", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "date"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    await createBooking(body);
+    res.send({ status: 201, message: "Added" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while adding a user record" });
+  }
+});
 
 // ANCHOR PATCH
 
@@ -713,6 +754,20 @@ app.delete("/user-records/:recordsId", async (req, res) => {
     }
 
     await deleteRecord(recordsId);
+    res.send({ status: 200, message: "Deleted" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while deleting the log" });
+  }
+});
+
+// 직관 예약 삭제
+app.delete("/bookings", async (req, res) => {
+  try {
+    const { bookingId } = req.body;
+    await deleteBooking(bookingId);
     res.send({ status: 200, message: "Deleted" });
   } catch (error) {
     console.error(error);

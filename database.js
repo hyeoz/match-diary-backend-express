@@ -123,6 +123,14 @@ const getCommunityLogByStadium = async (stadiumId) => {
   return logs;
 };
 
+const getAllBookings = async (userId) => {
+  const [bookings] = await pool.query(
+    "SELECT * FROM match_booking WHERE user_id = ?",
+    [userId]
+  );
+  return bookings;
+};
+
 /* SECTION INSERT */
 
 // 경기 데이터 생성
@@ -206,8 +214,22 @@ const createRecord = async (params) => {
   return result;
 };
 
-/* SECTION UPDATE */
+const createBooking = async (params) => {
+  const { userId, date } = params;
 
+  const parsedDate = dayjs(date).format("YYYY-MM-DD");
+
+  const result = await pool.query(
+    `
+    INSERT INTO user_booking (user_id, date)
+    VALUES (?, ?)
+  `,
+    [userId, parsedDate]
+  );
+  return result;
+};
+
+/* SECTION UPDATE */
 // 특정 경기 수정
 const updateMatch = async (params) => {
   const { date, time, home, away, homeScore, awayScore } = params;
@@ -280,6 +302,18 @@ const deleteRecord = async (id) => {
   return result;
 };
 
+// 직관 예약 삭제
+const deleteBooking = async (id) => {
+  const result = await pool.query(
+    `
+      DELETE FROM user_booking
+      WHERE booking_id = ?
+    `,
+    [id]
+  );
+  return result;
+};
+
 /* SECTION UTILS */
 const checkDuplicateMatch = async (params) => {
   const { date, time, home, away } = params;
@@ -313,11 +347,13 @@ export {
   getTeamStadiumRelation,
   getMatchByDate,
   getCommunityLogByStadium,
+  getAllBookings,
   // POST
   createMatch,
   createLog,
   createUser,
   createRecord,
+  createBooking,
   // UPDATE
   updateMatch,
   updateUser,
@@ -325,4 +361,5 @@ export {
   // DELETE
   deleteLog,
   deleteRecord,
+  deleteBooking,
 };

@@ -140,3 +140,11 @@ CREATE TABLE community_logs (
 -- VALUES
 -- ('asd1234', 1, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Amazing match! Loved the atmosphere.'),
 -- ('qwe1234', 2, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Great game, but the food was too expensive.');
+
+-- 직관 예약 테이블
+CREATE TABLE match_booking (
+    booking_id INT AUTO_INCREMENT PRIMARY KEY,  -- 고유 식별자
+    user_id VARCHAR(255) NOT NULL,                    -- 사용자 ID
+    date DATE NOT NULL,                     -- 예약 날짜
+    FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
+);
