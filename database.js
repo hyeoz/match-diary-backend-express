@@ -221,7 +221,7 @@ const createBooking = async (params) => {
 
   const result = await pool.query(
     `
-    INSERT INTO user_booking (user_id, date)
+    INSERT INTO match_booking (user_id, date)
     VALUES (?, ?)
   `,
     [userId, parsedDate]
@@ -306,7 +306,7 @@ const deleteRecord = async (id) => {
 const deleteBooking = async (id) => {
   const result = await pool.query(
     `
-      DELETE FROM user_booking
+      DELETE FROM match_booking
       WHERE booking_id = ?
     `,
     [id]
