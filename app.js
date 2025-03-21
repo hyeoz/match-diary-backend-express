@@ -661,7 +661,7 @@ app.patch(
       if (body.ticketUrl) {
         // 이미지 URL이 포함되었으면 이를 사용
         ticketUrl = body.ticketUrl;
-      } else if (req.files.ticketFile[0]) {
+      } else if (req.files.ticketFile?.[0]) {
         // 파일이 포함되었으면 S3에 업로드 후 URL 반환
         ticketUrl = await uploadToS3(req.files.ticketFile[0]); // S3에서 URL 반환
       }
@@ -677,7 +677,6 @@ app.patch(
           .send({ message: "Match not found for the given information" });
       }
 
-      console.log(oldRecord, "???");
       if (oldRecord[0].image) {
         const imageKey = oldRecord[0].image;
         await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
