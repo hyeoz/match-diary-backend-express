@@ -677,6 +677,7 @@ app.patch(
           .send({ message: "Match not found for the given information" });
       }
 
+      console.log(oldRecord, "???");
       if (oldRecord[0].image) {
         const imageKey = oldRecord[0].image;
         await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
