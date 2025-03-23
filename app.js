@@ -1,5 +1,5 @@
 import express from "express";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import multer from "multer";
 import dotenv from "dotenv";
 import sharp from "sharp";
@@ -101,13 +101,13 @@ async function uploadToS3(file, s3path = "uploads") {
 
 // 기존 파일 삭제
 const deleteOldFile = async (oldFileKey) => {
+  if (!oldFileKey || !s3) return;
   try {
-    await s3
-      .deleteObject({
-        Bucket: process.env.S3_BUCKET_NAME,
-        Key: oldFileKey,
-      })
-      .promise();
+    const command = new DeleteObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: oldFileKey,
+    });
+    await s3.send(command);
   } catch (error) {
     console.error("Error deleting old image:", error.message);
   }
@@ -677,7 +677,7 @@ app.patch(
           .send({ message: "Match not found for the given information" });
       }
 
-      if (oldRecord[0].image) {
+      if (oldRecord[0]?.image) {
         const imageKey = oldRecord[0].image;
         await deleteOldFile(imageKey); // 기존 이미지를 S3에서 삭제
       }
@@ -748,7 +748,7 @@ app.delete("/user-records/:recordsId", async (req, res) => {
         .send({ message: "Match not found for the given information" });
     }
 
-    if (oldRecord[0].image) {
+    if (oldRecord[0]?.image) {
       const imageKey = oldRecord[0].image;
       await deleteOldFile(imageKey); // S3에서 기존 이미지 삭제
     }
