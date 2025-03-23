@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import sharp from "sharp";
 import path from "path";
 import morgan from "morgan";
-import rfs from "rotating-file-stream";
+import { createStream } from "rotating-file-stream";
 import fs from "fs";
 
 import {
@@ -46,7 +46,7 @@ const logDirectory = path.join(process.cwd(), 'logs');
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
 
 // 로그 스트림 생성
-const accessLogStream = rfs.createStream('access.log', {
+const accessLogStream = createStream('access.log', {
   interval: '1d', // 매일 새로운 파일 생성
   path: logDirectory,
   size: '10M', // 파일 크기가 10MB를 넘으면 새로운 파일 생성
