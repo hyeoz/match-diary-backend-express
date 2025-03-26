@@ -131,6 +131,12 @@ const getAllBookings = async (userId) => {
   return bookings;
 };
 
+// 로컬스토리지 데이터 조회
+const getLocalStorage = async () => {
+  const [storage] = await pool.query("SELECT * FROM temp_local_storage");
+  return storage;
+};
+
 /* SECTION INSERT */
 
 // 경기 데이터 생성
@@ -361,6 +367,7 @@ export {
   getMatchByDate,
   getCommunityLogByStadium,
   getAllBookings,
+  getLocalStorage,
   // POST
   createMatch,
   createLog,

@@ -40,6 +40,7 @@ import {
   deleteBooking,
   createBooking,
   createLocalStorage,
+  getLocalStorage,
 } from "./database.js";
 
 dotenv.config();
@@ -354,6 +355,17 @@ app.post("/bookings", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send({ message: "Failed to fetch bookings" });
+  }
+});
+
+// 로컬스토리지 데이터 조회
+app.get("/local-storage", async (req, res) => {
+  try {
+    const storage = await getLocalStorage();
+    res.send(storage);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to fetch local storage" });
   }
 });
 
