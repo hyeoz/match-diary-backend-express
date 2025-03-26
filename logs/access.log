@@ -1,3 +1,0 @@
-::1 - - [23/Mar/2025:12:44:57 +0000] "GET / HTTP/1.1" 404 139 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
-::1 - - [23/Mar/2025:12:47:22 +0000] "GET /matches HTTP/1.1" 500 37 "-" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
-::1 - - [23/Mar/2025:12:47:22 +0000] "GET /favicon.ico HTTP/1.1" 404 150 "http://localhost/matches" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36"
