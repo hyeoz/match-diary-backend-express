@@ -148,3 +148,12 @@ CREATE TABLE match_booking (
     date DATE NOT NULL,                     -- 예약 날짜
     FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
 );
+
+-- 로컬스토리지 데이터 임시 테이블
+-- TODO 로컬스토리지 구조 확인 후 서버 마이그레이션 필요
+CREATE TABLE local_storage (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(255) NOT NULL,
+    key VARCHAR(255) NOT NULL,
+    value TEXT NOT NULL
+);
