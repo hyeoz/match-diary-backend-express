@@ -1,5 +1,9 @@
 import express from "express";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import multer from "multer";
 import dotenv from "dotenv";
 import sharp from "sharp";
@@ -35,6 +39,7 @@ import {
   getAllBookings,
   deleteBooking,
   createBooking,
+  createLocalStorage,
 } from "./database.js";
 
 dotenv.config();
@@ -42,18 +47,18 @@ dotenv.config();
 const app = express();
 
 // 로그 디렉토리 생성
-const logDirectory = path.join(process.cwd(), 'logs');
+const logDirectory = path.join(process.cwd(), "logs");
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
 
 // 로그 스트림 생성
-const accessLogStream = createStream('access.log', {
-  interval: '1d', // 매일 새로운 파일 생성
+const accessLogStream = createStream("access.log", {
+  interval: "1d", // 매일 새로운 파일 생성
   path: logDirectory,
-  size: '10M', // 파일 크기가 10MB를 넘으면 새로운 파일 생성
+  size: "10M", // 파일 크기가 10MB를 넘으면 새로운 파일 생성
 });
 
 // 로깅 미들웨어 설정
-app.use(morgan('combined', { stream: accessLogStream }));
+app.use(morgan("combined", { stream: accessLogStream }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -462,7 +467,6 @@ app.post("/create-user", async (req, res) => {
 });
 
 // 기록 추가
-// app.post("/create-record", upload.single("file"), async (req, res) => {
 app.post(
   "/create-record",
   upload.fields([
@@ -545,6 +549,33 @@ app.post("/create-booking", async (req, res) => {
     }
 
     await createBooking(body);
+    res.send({ status: 201, message: "Added" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while adding a user record" });
+  }
+});
+
+// NOTE 임시 스토리지 데이터 업로드
+app.post("/create-local-storage", async (req, res) => {
+  try {
+    const body = req.body;
+
+    if (!body) {
+      return res.status(400).send({ message: "Payload is required" });
+    }
+
+    // 필요한 모든 필드가 제공되었는지 확인
+    const requiredFields = ["userId", "storageKey", "storageValue"];
+    for (const field of requiredFields) {
+      if (!(field in body)) {
+        return res.status(400).send({ message: `${field} is required` });
+      }
+    }
+
+    await createLocalStorage(body);
     res.send({ status: 201, message: "Added" });
   } catch (error) {
     console.error(error);

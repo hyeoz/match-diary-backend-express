@@ -151,9 +151,9 @@ CREATE TABLE match_booking (
 
 -- 로컬스토리지 데이터 임시 테이블
 -- TODO 로컬스토리지 구조 확인 후 서버 마이그레이션 필요
-CREATE TABLE local_storage (
+CREATE TABLE temp_local_storage (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
-    key VARCHAR(255) NOT NULL,
-    value TEXT NOT NULL
+    storage_key VARCHAR(255) NOT NULL,
+    storage_value TEXT NOT NULL
 );

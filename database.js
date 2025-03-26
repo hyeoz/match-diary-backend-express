@@ -229,6 +229,19 @@ const createBooking = async (params) => {
   return result;
 };
 
+// NOTE 로컬스토리지 데이터 추가
+const createLocalStorage = async (params) => {
+  const { userId, storageKey, storageValue } = params;
+  const result = await pool.query(
+    `
+      INSERT INTO temp_local_storage (user_id, storage_key, storage_value)
+      VALUES (?, ?, ?)
+    `,
+    [userId, storageKey, storageValue]
+  );
+  return result;
+};
+
 /* SECTION UPDATE */
 // 특정 경기 수정
 const updateMatch = async (params) => {
@@ -354,6 +367,7 @@ export {
   createUser,
   createRecord,
   createBooking,
+  createLocalStorage,
   // UPDATE
   updateMatch,
   updateUser,
