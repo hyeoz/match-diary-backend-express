@@ -365,7 +365,9 @@ app.get("/local-storage", async (req, res) => {
     res.send(storage);
   } catch (error) {
     console.error(error);
-    res.status(500).send({ message: "Failed to fetch local storage" });
+    res
+      .status(500)
+      .send({ message: error.message || "Failed to fetch local storage" });
   }
 });
 
@@ -593,7 +595,7 @@ app.post("/create-local-storage", async (req, res) => {
     console.error(error);
     res
       .status(500)
-      .send({ message: "An error occurred while adding a user record" });
+      .send({ message: error.message || "Failed to add local storage" });
   }
 });
 
