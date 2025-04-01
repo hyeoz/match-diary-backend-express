@@ -123,7 +123,7 @@ def is_doubleheader(entries, target_entry):
 
 # NOTE 비고가 없을 때 '-' 로 처리
 def get_memo_text(row_data, is_first_game):
-    print(f"Row data: {row_data['row'][7]}, {row_data['row'][8]}")
+    print(f"Row data: {row_data['row'][-1]}")
     try:
         memo_idx = 8 if is_first_game else 7
         if len(row_data['row']) > memo_idx:
