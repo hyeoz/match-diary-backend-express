@@ -175,7 +175,8 @@ async def run_crawler():
                         # 경기장 정보
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
                         # 비고
-                        data['memo'] = row['row'][-1]['Text']
+                        data['memo'] = row['row'][8]['Text']
+                        print(row['row'][8]['Text'])
                         formedData.append(data)
                     
                     else:
@@ -200,7 +201,8 @@ async def run_crawler():
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][6]['Text'])
 
                         # 비고
-                        data['memo'] = row['row'][-1]['Text']
+                        data['memo'] = row['row'][7]['Text']
+                        print(row['row'][7]['Text'])
                         formedData.append(data) 
 
                 except Exception as e:
