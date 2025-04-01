@@ -121,6 +121,17 @@ def is_doubleheader(entries, target_entry):
                 elif "더블헤더" not in target_entry['memo']:  # 중복 방지
                     target_entry['memo'] = f"{target_entry['memo']}, 더블헤더"
 
+# NOTE 비고가 없을 때 '-' 로 처리
+def get_memo_text(row_data, is_first_game):
+    try:
+        memo_idx = 8 if is_first_game else 7
+        if len(row_data['row']) > memo_idx:
+            return row_data['row'][memo_idx]['Text'] if row_data['row'][memo_idx]['Text'] else '-'
+        return '-'
+    except Exception as e:
+        print(f'Error getting memo: {e}')
+        return '-'
+
 # KOB 홈페이지 기준
 # 크롤링 함수
 async def run_crawler(): 
@@ -175,8 +186,8 @@ async def run_crawler():
                         # 경기장 정보
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
                         # 비고
-                        data['memo'] = row['row'][8]['Text']
-                        print(row['row'][8]['Text'])
+                        data['memo'] = get_memo_text(row, True)
+                        print(f"First game memo: {data['memo']}")
                         formedData.append(data)
                     
                     else:
@@ -201,8 +212,8 @@ async def run_crawler():
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][6]['Text'])
 
                         # 비고
-                        data['memo'] = row['row'][7]['Text']
-                        print(row['row'][7]['Text'])
+                        data['memo'] = get_memo_text(row, False)
+                        print(f"Second game memo: {data['memo']}")
                         formedData.append(data) 
 
                 except Exception as e:
