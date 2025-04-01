@@ -126,7 +126,6 @@ def get_memo_text(row_data, is_first_game):
     try:
         memo_idx = 8 if is_first_game else 7
         if len(row_data['row']) > memo_idx:
-            print(f"Memo text: {row_data['row'][memo_idx]['Text']}")
             return row_data['row'][memo_idx]['Text'] if row_data['row'][memo_idx]['Text'] else '-'
         return '-'
     except Exception as e:
@@ -188,7 +187,10 @@ async def run_crawler():
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
                         # 비고
                         data['memo'] = get_memo_text(row, True)
-                        formedData.append(data)
+                        if data['memo'] == '기타':
+                            continue
+                        else:
+                            formedData.append(data)
                     
                     else:
                         # 날짜
@@ -213,7 +215,10 @@ async def run_crawler():
 
                         # 비고
                         data['memo'] = get_memo_text(row, False)
-                        formedData.append(data) 
+                        if data['memo'] == '기타':
+                            continue
+                        else:
+                            formedData.append(data) 
 
                 except Exception as e:
                     print(e)
