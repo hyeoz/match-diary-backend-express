@@ -123,6 +123,7 @@ def is_doubleheader(entries, target_entry):
 
 # NOTE 비고가 없을 때 '-' 로 처리
 def get_memo_text(row_data, is_first_game):
+    print(f"Row data: {row_data['row'][7]}, {row_data['row'][8]}")
     try:
         memo_idx = 8 if is_first_game else 7
         if len(row_data['row']) > memo_idx:
@@ -187,7 +188,6 @@ async def run_crawler():
                         data['stadium'] = find_id_by_stadium_short_name(row['row'][7]['Text'])
                         # 비고
                         data['memo'] = get_memo_text(row, True)
-                        print(f"First game memo: {data['memo']}")
                         formedData.append(data)
                     
                     else:
@@ -213,7 +213,6 @@ async def run_crawler():
 
                         # 비고
                         data['memo'] = get_memo_text(row, False)
-                        print(f"Second game memo: {data['memo']}")
                         formedData.append(data) 
 
                 except Exception as e:
