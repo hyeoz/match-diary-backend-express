@@ -333,6 +333,18 @@ const deleteBooking = async (id) => {
   return result;
 };
 
+// 경기 데이터 삭제
+const deleteMatch = async (id) => {
+  const result = await pool.query(
+    `
+      DELETE FROM matches
+      WHERE id = ?
+    `,
+    [id]
+  );
+  return result;
+};
+
 /* SECTION UTILS */
 const checkDuplicateMatch = async (params) => {
   const { date, time, home, away } = params;
@@ -383,4 +395,5 @@ export {
   deleteLog,
   deleteRecord,
   deleteBooking,
+  deleteMatch,
 };

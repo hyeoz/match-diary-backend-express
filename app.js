@@ -41,6 +41,7 @@ import {
   createBooking,
   createLocalStorage,
   getLocalStorage,
+  deleteMatch,
 } from "./database.js";
 
 dotenv.config();
@@ -836,6 +837,20 @@ app.delete("/bookings/:bookingId", async (req, res) => {
     res
       .status(500)
       .send({ message: "An error occurred while deleting the log" });
+  }
+});
+
+// 경기 데이터 삭제(관리자용)
+app.delete("/match/:matchId", async (req, res) => {
+  try {
+    const matchId = req.params.matchId;
+    await deleteMatch(matchId);
+    res.send({ status: 200, message: "Deleted" });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .send({ message: "An error occurred while deleting the match" });
   }
 });
 
