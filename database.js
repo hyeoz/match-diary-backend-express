@@ -16,6 +16,25 @@ const pool = mysql
 
 /* SECTION GET */
 
+// 모든 공지사항
+const getCommunityNotices = async () => {
+  const [notices] = await pool.query("SELECT * FROM community_notices");
+  return notices;
+};
+
+// 경기장별 공지사항
+const getCommunityNoticesByStadium = async (stadiumId) => {
+  const [notices] = await pool.query(
+    `
+    SELECT * 
+    FROM community_notices
+    WHERE stadium_id = ?
+  `,
+    [stadiumId]
+  );
+  return notices;
+};
+
 // 모든 경기
 const getMatches = async () => {
   const [matches] = await pool.query("SELECT * FROM matches");
@@ -138,6 +157,19 @@ const getLocalStorage = async () => {
 };
 
 /* SECTION INSERT */
+
+// 공지사항 추가
+const createNotice = async (params) => {
+  const { notice, stadium_id } = params;
+  const [result] = await pool.query(
+    `
+    INSERT INTO community_notices (notice, stadium_id)
+    VALUES (?, ?)
+    `,
+    [notice, stadium_id]
+  );
+  return result;
+};
 
 // 경기 데이터 생성
 const createMatch = async (params) => {
@@ -364,6 +396,8 @@ const checkDuplicateMatch = async (params) => {
 
 export {
   // GET
+  getCommunityNotices,
+  getCommunityNoticesByStadium,
   getMatches,
   getMatchById,
   getTeams,
@@ -382,6 +416,7 @@ export {
   getLocalStorage,
   // POST
   createMatch,
+  createNotice,
   createLog,
   createUser,
   createRecord,

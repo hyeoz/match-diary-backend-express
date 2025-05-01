@@ -14,6 +14,9 @@ import fs from "fs";
 
 import {
   getMatches,
+  getCommunityNotices,
+  getCommunityNoticesByStadium,
+  createNotice,
   getTeams,
   getStadiums,
   getUsers,
@@ -138,6 +141,7 @@ const deleteOldFile = async (oldFileKey) => {
 };
 
 // ANCHOR GET
+
 // 모든 경기
 app.get("/matches", async (req, res) => {
   try {
@@ -347,6 +351,25 @@ app.get("/community-log", async (req, res) => {
   }
 });
 
+// 모든 커뮤니티 공지사항
+app.get("/community-notices", async (req, res) => {
+  try {
+    const stadiumId = req.query.stadiumId;
+
+    let notices;
+    if (stadiumId) {
+      notices = await getCommunityNoticesByStadium(stadiumId);
+    } else {
+      notices = await getCommunityNotices();
+    }
+
+    res.status(200).json(notices);
+  } catch (error) {
+    console.error("Error getting community notices:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // 유저의 직관 예약 기록 조회
 app.post("/bookings", async (req, res) => {
   try {
@@ -373,6 +396,7 @@ app.get("/local-storage", async (req, res) => {
 });
 
 // ANCHOR POST
+
 // 경기 추가
 app.post("/match", async (req, res) => {
   try {
@@ -597,6 +621,26 @@ app.post("/create-local-storage", async (req, res) => {
     res
       .status(500)
       .send({ message: error.message || "Failed to add local storage" });
+  }
+});
+
+// 커뮤니티공지사항 생성
+app.post("/community-notices", async (req, res) => {
+  try {
+    const { notice, stadium_id } = req.body;
+
+    if (!notice || !stadium_id) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const result = await createNotice({ notice, stadium_id });
+    res.status(201).json({
+      message: "Notice created successfully",
+      noticeId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Error creating community notice:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

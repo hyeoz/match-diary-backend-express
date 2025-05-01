@@ -141,6 +141,15 @@ CREATE TABLE community_logs (
 -- ('asd1234', 1, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Amazing match! Loved the atmosphere.'),
 -- ('qwe1234', 2, STR_TO_DATE('2024.03.23', '%Y.%m.%d'), 'Great game, but the food was too expensive.');
 
+-- 커뮤니티 공지 테이블
+CREATE TABLE community_notices (
+    notice_id INT AUTO_INCREMENT PRIMARY KEY,  -- 고유 식별자
+    notice TEXT NOT NULL,             -- 사용자가 작성한 게시글
+    stadium_id INT NOT NULL,          -- 경기장 ID
+    FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
+);
+ 
+
 -- 직관 예약 테이블
 CREATE TABLE match_booking (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,  -- 고유 식별자
@@ -150,7 +159,7 @@ CREATE TABLE match_booking (
 );
 
 -- 로컬스토리지 데이터 임시 테이블
--- TODO 로컬스토리지 구조 확인 후 서버 마이그레이션 필요
+-- 로컬스토리지 구조 확인 후 서버 마이그레이션 필요
 CREATE TABLE temp_local_storage (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(255) NOT NULL,
