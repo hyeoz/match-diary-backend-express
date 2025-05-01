@@ -160,13 +160,13 @@ const getLocalStorage = async () => {
 
 // 공지사항 추가
 const createNotice = async (params) => {
-  const { notice, stadium_id } = params;
+  const { notice, notice_type, stadium_id } = params;
   const [result] = await pool.query(
     `
-    INSERT INTO community_notices (notice, stadium_id)
-    VALUES (?, ?)
+    INSERT INTO community_notices (notice, notice_type, stadium_id)
+    VALUES (?, ?, ?)
     `,
-    [notice, stadium_id]
+    [notice, notice_type, stadium_id]
   );
   return result;
 };

@@ -627,13 +627,13 @@ app.post("/create-local-storage", async (req, res) => {
 // 커뮤니티공지사항 생성
 app.post("/community-notices", async (req, res) => {
   try {
-    const { notice, stadium_id } = req.body;
+    const { notice, notice_type, stadium_id } = req.body;
 
-    if (!notice || !stadium_id) {
+    if (!notice || !notice_type || !stadium_id) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const result = await createNotice({ notice, stadium_id });
+    const result = await createNotice({ notice, notice_type, stadium_id });
     res.status(201).json({
       message: "Notice created successfully",
       noticeId: result.insertId,

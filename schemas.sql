@@ -145,6 +145,7 @@ CREATE TABLE community_logs (
 CREATE TABLE community_notices (
     notice_id INT AUTO_INCREMENT PRIMARY KEY,  -- 고유 식별자
     notice TEXT NOT NULL,             -- 사용자가 작성한 게시글
+    notice_type VARCHAR(50) NOT NULL,  -- 공지사항 타입 (예: 📢normal, 🍽️food, ⚾️moment )
     stadium_id INT NOT NULL,          -- 경기장 ID
     FOREIGN KEY (stadium_id) REFERENCES kbo_stadiums(stadium_id)
 );
