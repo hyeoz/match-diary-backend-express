@@ -48,6 +48,8 @@ import {
   deleteMatch,
 } from "./database.js";
 
+dotenv.config();
+
 // CORS 설정
 app.use(
   cors({
@@ -57,8 +59,6 @@ app.use(
     // credentials: true, // 쿠키 사용 시 필요
   })
 );
-
-dotenv.config();
 
 const app = express();
 
