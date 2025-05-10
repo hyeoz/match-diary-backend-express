@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import {
   S3Client,
   PutObjectCommand,
@@ -46,6 +47,16 @@ import {
   getLocalStorage,
   deleteMatch,
 } from "./database.js";
+
+// CORS 설정
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://hyeoz.today"], // 모든 출처 허용 (실제 운영 환경에서는 특정 도메인만 허용하는 것이 좋습니다)
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    // credentials: true, // 쿠키 사용 시 필요
+  })
+);
 
 dotenv.config();
 
