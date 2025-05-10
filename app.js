@@ -52,6 +52,15 @@ dotenv.config();
 
 const app = express();
 
+// CORS 설정
+app.use(cors({
+  origin: ["http://localhost:5173", "https://hyeoz.today"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  // credentials: true, // 쿠키 사용 시 필요
+}));
+
+
 // 로그 디렉토리 생성
 const logDirectory = path.join(process.cwd(), "logs");
 fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory);
@@ -903,14 +912,6 @@ app.delete("/match/:matchId", async (req, res) => {
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wroeng...");
-
-  // CORS 설정
-  cors({
-    origin: ["http://localhost:5173", "https://hyeoz.today"], // 모든 출처 허용 (실제 운영 환경에서는 특정 도메인만 허용하는 것이 좋습니다)
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    // credentials: true, // 쿠키 사용 시 필요
-  });
 });
 
 // ANCHOR SERVER
