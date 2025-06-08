@@ -9,11 +9,9 @@ import multer from "multer";
 import dotenv from "dotenv";
 import sharp from "sharp";
 import path from "path";
-import morgan from "morgan";
 import { createStream } from "rotating-file-stream";
 import fs from "fs";
 import * as Sentry from "@sentry/node";
-import * as Tracing from "@sentry/tracing";
 
 import {
   getMatches,
@@ -89,7 +87,24 @@ const accessLogStream = createStream("access.log", {
 });
 
 // 로깅 미들웨어 설정
-app.use(morgan("combined", { stream: accessLogStream }));
+app.use((req, res, next) => {
+  // ELB Health Check 요청 제외
+  if (req.headers["user-agent"] === "ELB-HealthChecker/2.0") {
+    return next();
+  }
+
+  // 요청 시작 시간 기록
+  req._startTime = Date.now();
+
+  // 응답 후 로깅
+  res.on("finish", () => {
+    const duration = Date.now() - req._startTime;
+    const log = `${req.method} ${req.path} ${res.statusCode} ${duration}ms ${req.headers["user-agent"]} ${req.ip}`;
+    accessLogStream.write(`${new Date().toISOString()} ${log}\n`);
+  });
+
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
