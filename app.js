@@ -12,6 +12,8 @@ import path from "path";
 import morgan from "morgan";
 import { createStream } from "rotating-file-stream";
 import fs from "fs";
+import * as Sentry from "@sentry/node";
+import * as Tracing from "@sentry/tracing";
 
 import {
   getMatches,
@@ -49,17 +51,31 @@ import {
 } from "./database.js";
 
 dotenv.config();
-
 const app = express();
 
-// CORS 설정
-app.use(cors({
-  origin: ["http://localhost:5173", "https://hyeoz.today"],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  // credentials: true, // 쿠키 사용 시 필요
-}));
+// Sentry 초기화
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  integrations: [],
+  tracesSampleRate: 1.0, // 모든 트랜잭션을 샘플링
+});
 
+// Express 에러 핸들러 설정
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
+
+// Sentry 에러 핸들러
+app.use(Sentry.Handlers.errorHandler());
+
+// CORS 설정
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://hyeoz.today"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    // credentials: true, // 쿠키 사용 시 필요
+  })
+);
 
 // 로그 디렉토리 생성
 const logDirectory = path.join(process.cwd(), "logs");
@@ -910,11 +926,13 @@ app.delete("/match/:matchId", async (req, res) => {
 
 // ANCHOR ERROR
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something went wroeng...");
+  res.statusCode = err.status || 500;
+  res.json({
+    error: err.message,
+  });
 });
 
 // ANCHOR SERVER
 app.listen(80, () => {
-  console.log("Server is running on port 80");
+  console.log(`Server is running on port 80`);
 });
