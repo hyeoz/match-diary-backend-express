@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx nodemon app.js",
-    "start": "pm2 start app.js --name matchdiary-backend",
+    "start": "npm install && pm2 start app.js --name matchdiary-backend",
     "stop": "pm2 stop matchdiary-backend",
     "restart": "pm2 restart matchdiary-backend",
     "logs": "pm2 logs matchdiary-backend"
