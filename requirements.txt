@@ -1,0 +1,16 @@
+# Web Scraping
+beautifulsoup4==4.12.3
+
+# HTTP Requests
+httpx==0.28.1
+requests==2.32.3
+
+# Environment Variables
+python-dotenv==1.0.1
+
+# Database
+aiomysql==0.2.0
+
+# Selenium Web Automation
+selenium==4.27.1
+webdriver-manager==4.0.2

@@ -1,4 +1,13 @@
 /node_modules
 .env
+.env.local
 /uploads
 /logs
+
+# Blog Automation
+/tmp
+*.pyc
+__pycache__/
+.pytest_cache/
+chromedriver
+*.log
